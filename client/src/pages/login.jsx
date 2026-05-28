@@ -1,9 +1,14 @@
 import React,{useState} from 'react'
-import Avatar from '../Mycomponents/avatar.jsx'
+import Avatar from '../components/avatar'
 import { useNavigate } from 'react-router-dom';
 import Playground from './playground.jsx';
+import CreateRoom from '../components/createroom.jsx';
+import Join from '../components/join.jsx';
 
 function Login(){
+
+   const [openCreateRoom, setOpenCreateRoom] = useState(false);
+   const [openJoin, setOpenJOin] = useState(false);
 
     // Name
     const [name, setName] = useState(
@@ -35,9 +40,10 @@ function Login(){
       
     const navigate = useNavigate();
 
+
   return (
     <>
-        <div className="bg-purple-400 p-6 gap-20 grid justify-center items-center w-[90vw] max-w-[400px] min-h[500px] rounded-3xl" >
+        <div className="bg-purple-400 p-6 gap-20 grid justify-center items-center w-[90vw] max-w-[400px] min-h-[500px] rounded-3xl" >
 
         <div className="bg-purple-500 p-1  w-full h-[200px] flex items-center justify-between rounded-3xl">
           <button onClick={leftClick}>
@@ -78,16 +84,24 @@ function Login(){
         <div className='flex justify-center gap-10'>
 
           <button className='bg-blue-900 p-2 px-4 py-2 text-white rounded-3xl font-bold
-                  hover:scale-90
-          '>
+                  hover:scale-90'
+                  onClick={()=>setOpenJOin(false)} >
               Join
          </button>
 
+         {/* <div>
+            <Join open={openJoin} setOpen={setOpenJOin}/>
+         </div> */}
+
          <button className='bg-blue-900 p-2 px-4 py-2 text-white rounded-3xl font-bold
                   hover:scale-90
-          '>
+          '  onClick={() => setOpenCreateRoom(false)}>
               Create
          </button >
+
+        {/* <div>
+          <CreateRoom open={openCreateRoom} setOpen={setOpenCreateRoom} />
+        </div> */}
 
          <button className='bg-blue-900 p-2 px-4 py-2 text-white rounded-3xl font-bold
                  hover:scale-90'
