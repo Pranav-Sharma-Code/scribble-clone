@@ -50,9 +50,10 @@ class GameManager{
             else{
                 this.startNextRound();
             }
-            this.startNextRound();
+            this.sendGameState();
         },1000);
     }
+    
     sendGameState(){
         this.io.emit("game-state", GameState);
     }
