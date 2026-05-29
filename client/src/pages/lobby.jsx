@@ -1,0 +1,198 @@
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import socket from "../socket/socket";
+
+const Lobby = () => {
+
+    const navigate = useNavigate();
+    const { roomCode } = useParams();
+    const [players, setPlayers] = useState([]);
+    const [hostId, setHostId] = useState("");
+
+    useEffect(() => {
+        socket.on("player_list_update", ({ players, hostId }) => {
+            setPlayers(players);
+            setHostId(hostId);
+        });
+
+        socket.on("game_started", () => {
+            navigate("/playground");
+        });
+
+        socket.on("game_error", (message) => {
+            alert(message);
+        });
+
+        socket.on("new_host", (newHostId) => {
+            setHostId(newHostId);
+        });
+
+        return () => {
+            socket.off("player_list_update");
+            socket.off("game_started");
+            socket.off("game_error");
+            socket.off("new_host");
+        };
+
+    }, [navigate]);
+
+    useEffect(() => {
+
+        console.log("ROOM PAGE LOADED");
+
+        const playerName = localStorage.getItem("name")?.trim() || "Player";
+
+
+        socket.emit("join_room", { roomCode, playerName }, (response) => {
+            console.log("AUTO JOIN:", response);
+        }
+        );
+
+    }, [roomCode]);
+
+
+    const startGame = () => {
+
+        socket.emit("start_game", { roomCode });
+
+    };
+
+    useEffect(() => {
+
+        socket.emit("get_room", { roomCode }, (response) => {
+
+            console.log("GET ROOM RESPONSE:", response);
+
+            if (!response.success) {
+                console.log("ROOM NOT FOUND");
+                return;
+            }
+
+            setPlayers(response.players);
+            setHostId(response.hostId);
+        }
+        );
+
+    }, [roomCode]);
+
+
+    return (
+        <div className='fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4'>
+
+            <div className="bg-white rounded-3xl p-8 w-full max-w-3xl">
+
+                <h1 className="text-4xl font-black text-center mb-8">
+                    Lobby
+                </h1>
+
+
+
+                <div className="bg-purple-100 rounded-2xl p-4 mb-8 shadow-md hover:shadow-lg transition-all duration-300">
+
+                    <div className="flex justify-between items-center">
+
+                        <div>
+                            <h2 className="font-bold text-lg text-purple-900">
+                                Room Code
+                            </h2>
+
+                            <span className="text-3xl font-black tracking-widest text-purple-700">
+                                {roomCode}
+                            </span>
+                        </div>
+
+                        <button
+                            onClick={() => { navigator.clipboard.writeText(roomCode) }}
+                            className="group bg-purple-600 hover:bg-purple-700 active:scale-90 transition-all duration-200 px-4 py-3 rounded-xl shadow-lg cursor-pointer"
+                        >
+                            <span className="material-symbols-outlined text-white transition-all duration-300">
+                                content_copy
+                            </span>
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div className="bg-purple-100 rounded-2xl p-4 mb-8 shadow-md hover:shadow-lg transition-all duration-300">
+
+                    <div className="flex justify-between items-start gap-4">
+
+                        <div className="flex-1">
+                            <p className="font-bold text-lg text-purple-900">
+                                Invite Link
+                            </p>
+
+                            <p className="text-blue-600 break-all text-lg font-bold">
+                                {window.location.origin}/room/{roomCode}
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(
+                                    `${window.location.origin}/room/${roomCode}`
+                                );
+                            }}
+                            className="group bg-purple-600 hover:bg-purple-700 active:scale-90 transition-all duration-200 px-4 py-3 rounded-xl shadow-lg cursor-pointer"
+                        >
+                            <span className="material-symbols-outlined text-white transition-all duration-300">
+                                content_copy
+                            </span>
+                        </button>
+
+                    </div>
+
+                </div>
+
+                {/* ----Players----- */}
+
+                <div>
+
+                    <h2 className="text-2xl font-black mb-4">
+                        Players ({players.length})
+                    </h2>
+
+                    <div className="space-y-3">
+                        {players.map((player) => (
+                            <div
+                                key={player.id}
+                                className="bg-gray-100 p-4 rounded-2xl flex justify-between items-center"
+                            >
+                                <span className="font-bold text-xl">
+                                    {player.name}
+                                </span>
+                                {player.id === hostId && (
+                                    <span className="text-yellow-500 text-2xl">
+                                        HOST
+                                    </span>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+
+                <div className="flex justify-center mt-8">
+                    {socket.id === hostId ? (
+                        <button
+                            onClick={startGame}
+                            className="bg-green-600 text-white font-bold text-xl px-8 py-4 rounded-2xl hover:scale-95 transition-all"
+                        >
+                            Start Game
+                        </button>
+
+                    ) : (
+
+                        <p className="font-bold text-xl text-gray-500">
+                            Waiting for Host...
+                        </p>
+
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Lobby;

@@ -1,6 +1,50 @@
-import React from 'react'
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import socket from '../socket/socket';
+import PropTypes from 'prop-types';
 
-const CreateRoom = ({ setOpen, setOpenJoinRoom }) => {
+const CreateRoom = ({ setOpen }) => {
+
+  const playerName = localStorage.getItem("name") || "";
+
+
+  const navigate = useNavigate();
+
+  const [players, setPlayers] = useState(8);
+  const [drawTime, setDrawTime] = useState(75);
+  const [rounds, setRounds] = useState(3);
+  const [gameMode, setGameMode] = useState("Normal");
+
+  const createRoom = () => {
+
+    if (!/^[A-Za-z0-9_]{2,8}$/.test(playerName)) {
+      alert("Name should have 2 or more character and only use A-Z a-z 0-9 '_'");
+      return;
+    }
+
+    socket.emit("create_room", {
+      playerName, settings: {
+        maxPlayers: players,
+        drawTime,
+        rounds,
+        gameMode
+      },
+    },
+
+      (response) => {
+        console.log(response);
+
+        if (!response.success) {
+          alert("Failed to create room");
+          return;
+        }
+        localStorage.setItem("isHost", "true");
+        setOpen(false);
+        navigate(`/room/${response.roomCode}`);
+      }
+    );
+  }
+
   return (
     <div className='fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4'>
 
@@ -29,17 +73,17 @@ const CreateRoom = ({ setOpen, setOpenJoinRoom }) => {
           </p>
         </div>
 
-        
+
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
 
-          
+
           <div className='flex flex-col gap-2'>
             <label className='text-xl font-bold text-gray-700'>
               Players
             </label>
 
             <select
-              defaultValue={8}
+              value={players} onChange={(event) => setPlayers(Number(event.target.value))}
               className='w-full border-2 border-gray-200 rounded-2xl p-4 text-lg font-semibold focus:outline-none focus:border-blue-500 transition-all'
             >
               {[...Array(19)].map((_, i) => (
@@ -57,12 +101,12 @@ const CreateRoom = ({ setOpen, setOpenJoinRoom }) => {
             </label>
 
             <select
-              defaultValue={75}
+              value={drawTime} onChange={(event) => setDrawTime(Number(event.target.value))}
               className='w-full border-2 border-gray-200 rounded-2xl p-4 text-lg font-semibold focus:outline-none focus:border-blue-500 transition-all'
             >
               {[...Array(16)].map((_, i) => (
-                <option key={(i+1)*15} value={(i+1)*15}>
-                  {(i+1)*15}
+                <option key={(i + 1) * 15} value={(i + 1) * 15}>
+                  {(i + 1) * 15}
                 </option>
               ))}
             </select>
@@ -74,7 +118,7 @@ const CreateRoom = ({ setOpen, setOpenJoinRoom }) => {
             </label>
 
             <select
-              defaultValue={3}
+              value={rounds} onChange={(event) => setRounds(Number(event.target.value))}
               className='w-full border-2 border-gray-200 rounded-2xl p-4 text-lg font-semibold focus:outline-none focus:border-blue-500 transition-all'
             >
               {[...Array(9)].map((_, i) => (
@@ -91,6 +135,7 @@ const CreateRoom = ({ setOpen, setOpenJoinRoom }) => {
             </label>
 
             <select
+              value={gameMode} onChange={(event) => setGameMode(event.target.value)}
               className='w-full border-2 border-gray-200 rounded-2xl p-4 text-lg font-semibold focus:outline-none focus:border-blue-500 transition-all'
             >
               <option value='Normal'>Normal</option>
@@ -100,32 +145,12 @@ const CreateRoom = ({ setOpen, setOpenJoinRoom }) => {
           </div>
         </div>
 
-   
-        <div className='mt-10 bg-gray-100 rounded-3xl p-6 flex flex-col gap-4'>
-
-          <h2 className='text-2xl font-black text-gray-800'>
-            Invite Friends
-          </h2>
-
-          <div className='bg-white rounded-2xl p-4 border border-gray-200'>
-            <p className='text-gray-500 font-semibold'>Invite Link</p>
-            <p className='text-blue-600 font-bold break-all'>
-              https://scribble-game.vercel.app/room/ABCD123
-            </p>
-          </div>
-
-          <div className='bg-white rounded-2xl p-4 border border-gray-200'>
-            <p className='text-gray-500 font-semibold'>Room Code</p>
-            <p className='text-3xl font-black tracking-widest text-gray-800'>
-              ABCD123
-            </p>
-          </div>
-        </div>
-
-        
         <div className='flex justify-center mt-10'>
-          <button className='bg-blue-600 hover:bg-blue-700 hover:scale-95 active:scale-90 transition-all duration-200 text-white font-black text-xl px-10 py-4 rounded-2xl shadow-lg'>
-            Start Game
+          <button
+            onClick={createRoom}
+            className='bg-blue-600 hover:bg-blue-700 hover:scale-95 active:scale-90 transition-all duration-200 text-white font-black text-xl px-10 py-4 rounded-2xl shadow-lg cursor-pointer'
+          >
+            Create Room
           </button>
         </div>
 
@@ -133,5 +158,9 @@ const CreateRoom = ({ setOpen, setOpenJoinRoom }) => {
     </div>
   )
 }
+
+CreateRoom.propTypes = {
+  setOpen: PropTypes.func.isRequired
+};
 
 export default CreateRoom

@@ -3,8 +3,7 @@ import http from 'http';
 import cors from 'cors';
 import { Server } from 'socket.io';
 
-import GameManager from './managers/GameManager.js';
-import gameHandler from './handlers/gameHandler.js';
+import socketHandler from "./socket/socketHandler.js";
 
 const app = express();
 
@@ -19,19 +18,13 @@ const io = new Server(server, {
     },
 })
 
-const gameManager = new GameManager(io);
 
 
 io.on("connection", (socket) => {
     console.log("USER CONNECTED:", socket.id);
-
-    gameHandler(socket, gameManager);
-
-    socket.on("disconnect", () => {
-        console.log("USER DISCONNECTED");
-    });
+    socketHandler(io, socket);
 });
 
-server.listen(3001, ()=>{
+server.listen(3001, () => {
     console.log("SERVER RUNNING ON 3001");
-})
+});
