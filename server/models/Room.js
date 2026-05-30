@@ -11,6 +11,7 @@ export default class Room {
             gameMode: settings.gameMode || "Normal",
         };
         this.players = [];
+        this.canvasStrokes = [];
         this.gameManager = new GameManager(this);
         this.gameStarted = false;
     }

@@ -88,10 +88,14 @@ export default class GameManager {
     }
 
     nextTurn(io) {
+
         if (this.room.players.length === 0) {
             return;
         }
-
+        
+        this.room.canvasStrokes = [];
+        io.to(this.room.roomCode).emit("canvas_clear");
+    
         if (this.currentDrawerIndex >= this.room.players.length) {
             this.currentDrawerIndex = 0;
         }

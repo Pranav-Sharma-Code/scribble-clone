@@ -9,11 +9,15 @@ import ChooseWord from './chooseWord.jsx';
 
 const DrawBoard = () => {
     const canvasRef = useRef(null);
-    const { roomCode } = useParams();
+    const lastPointRef = useRef(null);
+    const strokesRef = useRef([]);
+    const timeoutRef = useRef(null);
 
+    const { roomCode } = useParams();
     const [isDrawing, setIsDrawing] = useState(false);
     const [history, setHistory] = useState([]);
     const [color, setColor] = useState("black");
+    const [tool, setTool] = useState("brush");
 
     const [brushSize, setBrushSize] = useState(5);
     const [hiddenWord, setHiddenWord] = useState("");
@@ -25,23 +29,74 @@ const DrawBoard = () => {
     const [showRoundEnd, setshowRoundEnd] = useState(false);
     const [revealedWord, setRevealedWord] = useState("");
 
-    let [maxRounds, setMaxRounds] = useState("-")
-    const [round, setRound] = useState(1);
-    let [time, setTime] = useState("-");
+    let [maxRounds, setMaxRounds] = useState(0)
+    const [round, setRound] = useState(0);
+    let [time, setTime] = useState(0);
     const [word, setWord] = useState("");
+
+    const redrawCanvas = () => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (const stroke of strokesRef.current) {
+            if (!stroke.points.length) continue;
+
+            ctx.beginPath();
+            ctx.strokeStyle = stroke.color;
+            ctx.lineWidth = stroke.size;
+            ctx.lineCap = "round";
+            ctx.moveTo(
+                stroke.points[0].x,
+                stroke.points[0].y
+            );
+
+            for (let i = 1; i < stroke.points.length; i++) {
+                ctx.lineTo(
+                    stroke.points[i].x,
+                    stroke.points[i].y
+                );
+            }
+            ctx.stroke();
+        }
+    }
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
 
-        socket.on("receive-draw", (data) => {
-            ctx.strokeStyle = data.color;
-            ctx.lineWidth = data.brushSize;
-            ctx.beginPath();
-            ctx.moveTo(data.prevX, data.prevY);
-            ctx.lineTo(data.x, data.y);
-            ctx.stroke();
+        socket.on("draw_start", (stroke) => {
+            strokesRef.current.push(stroke);
+            redrawCanvas();
         });
+
+        socket.on("draw_move", ({
+            strokeId, x, y
+        }) => {
+            const stroke = strokesRef.current.find(
+                s => s.id === strokeId
+            );
+
+            if (!stroke) return;
+            stroke.points.push({ x, y });
+            redrawCanvas();
+        });
+
+        socket.on("draw_undo", (strokes) => {
+            strokesRef.current = strokes;
+            redrawCanvas();
+        });
+
+        socket.on("canvas_clear", () => {
+            strokesRef.current = [];
+            redrawCanvas();
+        });
+
+        socket.on("canvas_state", (strokes) => {
+            strokesRef.current = strokes;
+            redrawCanvas();
+        })
 
         socket.on("game_state", (data) => {
             setRound(data.currentRound);
@@ -53,11 +108,12 @@ const DrawBoard = () => {
         });
 
         socket.on("round_end", ({ word }) => {
+            clearTimeout(timeoutRef.current);
             setshowRoundEnd(true);
             setRevealedWord(word);
-            setTimeout(()=>{
+            timeoutRef.current = setTimeout(() => {
                 setshowRoundEnd(false);
-            },5000);
+            }, 5000);
         });
 
         socket.on("new_round", (data) => {
@@ -70,7 +126,13 @@ const DrawBoard = () => {
         });
 
         return () => {
-            socket.off("receive-draw");
+            socket.off("draw_start");
+            socket.off("draw_move");
+            socket.off("draw_undo");
+
+            socket.off("canvas_clear");
+            socket.off("canvas_state");
+
             socket.off("game_state");
             socket.off("choose_word");
             socket.off("round_end");
@@ -79,48 +141,48 @@ const DrawBoard = () => {
 
     }, []);
 
+    useEffect(() => {
+        console.log("CURRENT TOOL:", tool);
+    }, [tool]);
+
     const startDrawing = (event) => {
         if (socket.id !== currentDrawerId) return;
         setIsDrawing(true);
         const canvas = canvasRef.current;
-        const snapshot = canvas.toDataURL();
         const ctx = canvas.getContext('2d');
-        setHistory((prev) => [...prev, snapshot]);
-        ctx.beginPath();
-        ctx.moveTo(
-            event.nativeEvent.offsetX,
-            event.nativeEvent.offsetY
-        );
+        const x = event.nativeEvent.offsetX;
+        const y = event.nativeEvent.offsetY;
+
+        lastPointRef.current = { x, y };
+        socket.emit("draw_start", {
+            roomCode,
+            x, y,
+            color: tool === "eraser" ? "white" : color,
+            size: brushSize
+        });
     };
 
     const stopDrawing = () => {
+        if (!isDrawing) return;
+
+        socket.emit("draw_end");
         setIsDrawing(false);
+        lastPointRef.current = null;
     };
 
 
 
     const draw = (event) => {
         if (!isDrawing) return;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext("2d");
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
 
-        ctx.strokeStyle = color;
-        ctx.lineWidth = brushSize;
-        ctx.lineTo(x, y);
-        ctx.stroke();
+        const x = event.nativeEvent.offsetX;
+        const y = event.nativeEvent.offsetY;
 
-        socket.emit("draw", {
-            x, y,
-            prevX: x - 1,
-            prevY: y - 1,
-            color, brushSize,
+        socket.emit("draw_move", {
+            roomCode,
+            x, y
         });
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-    }
+    };
 
     if (showRoundEnd) {
         return (
@@ -129,7 +191,7 @@ const DrawBoard = () => {
                     <h1 className="text-4xl md:text-6xl font-extrabold  text-white/30 font-serif">
                         Word Was
                     </h1>
-                    <div className='bg-purple-600/20  max-w-md flex justify-center items-center p-5 rounded-2xl border-purple-950/20 border-2 font-serif'>
+                    <div className='bg-purple-600/20  max-w-md flex justify-center items-center p-5 rounded-2xl border-purple-950/20 border-2 font-serif animate-[wordReveal_1.0s_ease-out]'>
                         {revealedWord}
                     </div>
                 </div>
@@ -160,8 +222,8 @@ const DrawBoard = () => {
             {
                 socket.id === currentDrawerId &&
                 (
-                    <Tools color={color} setColor={setColor} brushSize={brushSize} canvasRef={canvasRef}
-                        setBrushSize={setBrushSize} history={history} setHistory={setHistory} />
+                    <Tools color={color} setColor={setColor} brushSize={brushSize}
+                        setBrushSize={setBrushSize} tool={tool} setTool={setTool} roomCode={roomCode} />
                 )
             }
             {

@@ -71,6 +71,8 @@ const roomHandler = (io, socket) => {
 
         callback({ success: true });
 
+        socket.emit("canvas_state", room.canvasStrokes);
+
         io.to(roomCode).emit("player_list_update",
             {
                 players: room.players,
@@ -127,6 +129,10 @@ const roomHandler = (io, socket) => {
                 players: room.players,
                 hostId: room.hostId
             });
+
+            if(socket.id === room.gameManager.currentDrawerId){
+                room.gameManager.nextTurn(io);
+            }
 
             if (room.gameStarted && room.players.length < 2) {
                 room.gameManager.endGame(io);

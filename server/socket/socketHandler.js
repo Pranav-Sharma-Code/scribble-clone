@@ -1,5 +1,6 @@
 import roomHandler from "../handlers/roomHandler.js";
 import gameHandler from "../handlers/gameHandler.js";
+import drawingHandler from "../handlers/drawingHandler.js";
 
 const socketHandler = (io, socket) => {
 
@@ -7,6 +8,7 @@ const socketHandler = (io, socket) => {
 
     roomHandler(io, socket);
     gameHandler(io, socket);
+    drawingHandler(io, socket);
 
 };
 

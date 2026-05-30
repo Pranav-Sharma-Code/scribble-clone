@@ -43,7 +43,7 @@ const WordBox = (props) => {
                         .map((char, index) => (
                             <span
                                 key={index}
-                                className="text-white text-xl md:text-2xl font-bold w-3 md:w-3 text-center pb-1 font-serif shadow-sm"
+                                className="text-white text-xl md:text-2xl font-bold w-3 md:w-3 text-center pb-1 shadow-sm"
                             >
                                 {char === " " ? "\u00A0" : char}
                             </span>
