@@ -5,6 +5,9 @@ const gameHandler = (io, socket) => {
     // ----------Start Game--------------
 
     socket.on("start_game", ({ roomCode }) => {
+
+        console.log("======== START_GAME ========")
+
         const room = roomManager.getRoom(roomCode);
 
         if (!room) return;
@@ -18,7 +21,60 @@ const gameHandler = (io, socket) => {
 
         room.gameStarted = true;
 
-        io.to(roomCode).emit("game_started");
+        const gameState = room.gameManager.startGame();
+        console.log("GAME STATE:", gameState);
+
+        room.gameManager.emitGameState(io);
+
+        io.to(roomCode).emit("game_started", gameState);
+
+        console.log(
+            "EMITTING CHOOSE WORD TO:",
+            gameState.drawerId
+        );
+
+        setTimeout(() => {
+            io.to(gameState.drawerId).emit("choose_word", {
+                words: gameState.wordOptions
+            });
+        }, 500);
+        console.log("after io.emit ")
+    },);
+
+    // ----------------Word-------------------------
+
+    socket.on("choose_word", ({ roomCode, word }) => {
+
+        const room = roomManager.getRoom(roomCode);
+        if (!room) return;
+        if (room.gameManager.currentDrawerId !== socket.id) return;
+        room.gameManager.currentWord = word;
+
+        room.gameManager.startTimer(io);
+        console.log("SENDING CHOOSE_WORD");
+        io.to(roomCode).emit("word_selected", { wordLength: word.length });
+    });
+
+
+    // --------------- Guess ---------------------
+
+    socket.on("guess_word", ({ roomCode, guess }) => {
+
+        const room = roomManager.getRoom(roomCode);
+        if (!room) return;
+        const game = room.gameManager;
+        if (!game.currentWord) return;
+
+        if (socket.id === game.currentDrawerId) return;
+        if (game.guessedPlayers.includes(socket.id)) return;
+
+        if (guess.toLowerCase().trim() === game.currentWord.toLowerCase().trim()) {
+            const player = room.getPlayer(socket.id);
+            game.handleCorrectGuess(player, io);
+        }
+        else {
+            socket.emit("guess_wrong", { guess });
+        }
     });
 
 

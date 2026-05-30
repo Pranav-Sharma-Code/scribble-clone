@@ -25,9 +25,9 @@ const CreateRoom = ({ setOpen }) => {
     socket.emit("create_room", {
       playerName, settings: {
         maxPlayers: players,
-        drawTime,
-        rounds,
-        gameMode
+        drawTime: drawTime,
+        maxRounds: rounds,
+        gameMode: gameMode
       },
     },
 

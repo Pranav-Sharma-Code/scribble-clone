@@ -16,7 +16,8 @@ const Lobby = () => {
         });
 
         socket.on("game_started", () => {
-            navigate("/playground");
+            console.log("GAME_STARTED RECEIVED IN LOBBY");
+            navigate(`/playground/${roomCode}`);
         });
 
         socket.on("game_error", (message) => {
@@ -34,7 +35,7 @@ const Lobby = () => {
             socket.off("new_host");
         };
 
-    }, [navigate]);
+    }, [navigate, roomCode]);
 
     useEffect(() => {
 
@@ -163,7 +164,7 @@ const Lobby = () => {
                                     {player.name}
                                 </span>
                                 {player.id === hostId && (
-                                    <span className="text-yellow-500 text-2xl">
+                                    <span  className="text-yellow-500 text-2xl">
                                         HOST
                                     </span>
                                 )}

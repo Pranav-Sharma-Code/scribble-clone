@@ -1,16 +1,21 @@
+import GameManager from "../managers/GameManager.js";
+
 export default class Room {
-    constructor(roomCode, hostId) {
+    constructor(roomCode, hostId, settings) {
         this.roomCode = roomCode;
         this.hostId = hostId;
-        this.players = [];
-        this.gameStarted = false;
         this.settings = {
-            rounds: 3,
-            drawTime: 75,
-            maxPlayers: 8
+            maxPlayers: settings.maxPlayers || 8,
+            maxRounds: settings.maxRounds || 3,
+            drawTime: settings.drawTime || 75,
+            gameMode: settings.gameMode || "Normal",
         };
+        this.players = [];
+        this.gameManager = new GameManager(this);
+        this.gameStarted = false;
     }
 
+    
 
     addPlayer(player) {
         this.players.push(player);

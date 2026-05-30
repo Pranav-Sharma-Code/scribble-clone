@@ -5,8 +5,8 @@ class RoomManager {
         this.rooms = new Map();
     }
 
-    createRoom(roomCode, hostId){
-        const room = new Room(roomCode, hostId);
+    createRoom(roomCode, hostId, settings){
+        const room = new Room(roomCode, hostId, settings);
         this.rooms.set(roomCode, room);
 
         return room;

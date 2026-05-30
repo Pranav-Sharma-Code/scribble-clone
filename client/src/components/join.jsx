@@ -12,14 +12,14 @@ const Join = (props) => {
 
         const roomCodeRegex = /^[A-Z0-9]{6}$/;
 
-        if(!roomCodeRegex.test(roomCode)){
+        if (!roomCodeRegex.test(roomCode)) {
             alert("Enter valid 6 character room code");
             return;
         }
 
         const playerName = localStorage.getItem("name")?.trim() || "Player";
 
-        if (!/^[A-Za-z0-9_]{2,8}$/.test(playerName)){
+        if (!/^[A-Za-z0-9_]{2,8}$/.test(playerName)) {
             alert("Name should have 2 or more character and only use A-Z a-z 0-9 '_'");
             return;
         }
@@ -30,6 +30,7 @@ const Join = (props) => {
                 alert(response.message);
                 return;
             }
+            
             navigate(`/room/${roomCode}`);
         });
     }
@@ -55,7 +56,7 @@ const Join = (props) => {
                 <input type="text" value={roomCode} onChange={(event) => setRoomCode(event.target.value.toUpperCase())}
                     className='w-full max-w-sm border-2 border-black/40 rounded-2xl p-2  text-2xl font-bold' placeholder='Enter Here...' />
 
-                <button onClick={joinRoom}
+                <button onClick={() => joinRoom()}
                     className='bg-blue-600 hover:bg-blue-700 hover:scale-95 active:scale-90 transition-all duration-200 text-white font-black text-xl px-10 py-4 rounded-2xl shadow-lg cursor-pointer'>
                     Join
                 </button>

@@ -1,62 +1,162 @@
-import words from '../data/words.js';
-import GameState from '../state/gameState.js';
+import words from "../data/Words.js";
 
-class GameManager{
-    constructor(io){
-        this.io = io;
+
+export default class GameManager {
+    constructor(room) {
+        this.room = room;
+        this.currentRound = 1;
+        this.currentDrawerIndex = 0;
+        this.currentDrawerId = null;
+        this.timeLeft = room.settings.drawTime;
+        this.timer = null
+        this.currentWord = null;
+        this.guessedPlayers = [];
+        this.status = "waiting";
     }
 
-    getRandomWord(){
+    startGame() {
+        console.log("GAME STARTED");
+        console.log("PLAYERS:", this.room.players);
+        
+        const firstDrawer = this.room.players[this.currentDrawerIndex];
+        this.currentDrawerId = firstDrawer.id;
+        const wordOptions = this.getRandomWords(3);
+
+        this.room.gameStarted = true;
+        this.status = "playing";
+
+        console.log("DRAWER:", this.currentDrawerId);
+        console.log("WORDS:", wordOptions);
+
+        return {
+            round: this.currentRound,
+            drawerId: this.currentDrawerId,
+            wordOptions
+        };
+    }
+
+    getRandomWords(count = 3) {
+
         const categories = Object.keys(words);
+        const selectedWords = [];
 
-        const randomCategory = 
-        categories[
-            Math.floor(Math.random()*categories.length)
-        ];
-        const categoryWords = words[randomCategory];
+        while (selectedWords.length < count) {
 
-        const randomWord = categoryWords[
-            Math.floor(Math.random()*categoryWords.length)
-        ];
-
-        return randomWord;
-    }
-
-    startGame(){
-        GameState.isPlaying = true;
-        GameState.round = 1;
-        GameState.time = 80;
-        GameState.word = this.getRandomWord();
-        this.startTimer();
-        this.sendGameState();
-    }
-
-    startNextRound(){
-        GameState.round++;
-        if(GameState.round > GameState.maxRounds){
-            GameState.round = 1;
+            const categary = categories[Math.floor(Math.random() * categories.length)];
+            const arr = words[categary];
+            const word = arr[Math.floor(Math.random() * arr.length)]
+            if (!selectedWords.includes(word)) selectedWords.push(word);
         }
-        GameState.time = 80;
-        GameState.word = this.getRandomWord();
-        this.sendGameState();
+        return selectedWords;
     }
 
-    startTimer(){
-        setInterval(() => {
-            if(!GameState.isPlaying) return;
-            if(GameState.time > 0){
-                GameState.time--;
+    startTimer(io) {
+        this.timeLeft = this.room.settings.drawTime;
+        this.timer = setInterval(() => {
+            this.timeLeft--;
+            this.emitGameState(io);
+
+            if (this.timeLeft <= 0) {
+                clearInterval(this.timer);
+                this.endRound(io);
             }
-            else{
-                this.startNextRound();
-            }
-            this.sendGameState();
-        },1000);
+        }, 1000);
     }
-    
-    sendGameState(){
-        this.io.emit("game-state", GameState);
+
+    endRound(io) {
+
+        io.to(this.room.roomCode).emit("round_end", {
+            word: this.currentWord
+        });
+
+        setTimeout(() => {
+            this.nextTurn(io);
+        }, 5000);
     }
+
+    nextTurn(io) {
+
+        this.currentDrawerIndex++;
+        this.currentWord = null;
+        this.guessedPlayers = [];
+
+        if (this.currentDrawerIndex >= this.room.players.length) {
+            this.currentDrawerIndex = 0;
+            this.currentRound++;
+        }
+
+        if (this.currentRound > this.room.settings.maxRounds) {
+            return this.endGame(io);
+        }
+
+
+        const drawer = this.room.players[this.currentDrawerIndex];
+        this.currentDrawerId = drawer.id;
+        const wordOptions = this.getRandomWords(3);
+
+        io.to(this.room.roomCode).emit("new_round", {
+            round: this.currentRound,
+            drawerId: this.currentDrawerId
+        });
+
+        io.to(drawer.id).emit("choose_word", {
+            words: wordOptions
+        });
+    }
+
+    endGame(io) {
+        this.room.gameStarted = false;
+        this.status = "finished";
+        const leaderboard = [...this.room.players].sort((a, b) => b.score - a.score);
+
+        io.to(this.room.roomCode).emit("game_over", {
+            winner: leaderboard[0],
+            leaderboard
+        });
+    }
+
+    handleCorrectGuess(player, io) {
+
+        if (this.guessedPlayers.includes(player.id)) return;
+        this.guessedPlayers.push(player.id);
+
+        player.score += this.timeLeft * 5;
+
+        const drawer = this.room.players.find(p => p.id === this.currentDrawerId);
+
+        if (drawer) {
+            drawer.score += Math.floor(this.timeLeft * 2);
+        }
+
+        io.to(this.room.roomCode).emit("leaderboard_update", this.room.players);
+
+        io.to(this.room.roomCode).emit("guess_correct", { playerId: player.id, playerName: player.name, score: player.score, scoreEarned: this.timeLeft * 5 });
+
+
+
+        const remainingPlayers = this.room.players.filter(
+            p => p.id !== this.currentDrawerId);
+
+        if (this.guessedPlayers.length >= remainingPlayers.length) {
+
+            clearInterval(this.timer);
+            this.endRound(io);
+        }
+    }
+
+    emitGameState = (io) => {
+        io.to(this.room.roomCode).emit("game_state", {
+            status: this.status,
+            currentRound: this.currentRound,
+            maxRounds: this.room.settings.maxRounds,
+            drawerId: this.currentDrawerId,
+            timeLeft: this.timeLeft,
+            guessedPlayers: this.guessedPlayers,
+            word: this.currentWord
+                ? "_".repeat(this.currentWord.length)
+                : ""
+        }
+        );
+    }
+
 }
-
-export default GameManager;

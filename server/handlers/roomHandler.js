@@ -9,7 +9,7 @@ const roomHandler = (io, socket) => {
     socket.on("create_room", ({ playerName, settings }, callback) => {
 
         const roomCode = generateRoomCode();
-        const room = roomManager.createRoom(roomCode, socket.id);
+        const room = roomManager.createRoom(roomCode, socket.id, settings);
         const player = new Player(socket.id, playerName);
 
         room.addPlayer(player);
@@ -59,9 +59,7 @@ const roomHandler = (io, socket) => {
             });
         }
 
-        const existingPlayer = room.players.find(
-            player => player.id === socket.id
-        );
+        const existingPlayer = room.players.find(player => player.id === socket.id);
 
         if (existingPlayer) {
             return callback({
