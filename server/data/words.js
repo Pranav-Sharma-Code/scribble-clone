@@ -1,13 +1,13 @@
 const words = {
-    animal: ["tiger", "lion", "elephant", "zebra", "monkey", "giraffe", "penguin", "dolphin", "rabbit", "dragon"],
+    animal: ["Tiger", "Lion", "Elephant", "Zebra", "Monkey", "Giraffe", "Penguin", "Dolphin", "Rabbit", "Dragon"],
 
-    objects: ["chair", "table", "camera", "laptop", "phone", "television", "bottle", "pencil", "guitar","helmet"],
+    objects: ["Chair", "Table", "Camera", "Laptop", "Phone", "Television", "Bottle", "Pencil", "Guitar","Helmet"],
 
-    food: ["pizza", "burger", "banana", "apple", "sandwich", "icecream", "noodles", "cake", "popcorn", "donut"],
+    food: ["Pizza", "Burger", "Banana", "Apple", "Sandwich", "Icecream", "Noodles", "Cake", "Popcorn", "Donut"],
 
-    places: ["school", "hospital", "airport", "beach", "mountain", "jungle", "temple", "museum", "stadium", "park"],
+    places: ["School", "Hospital", "Airport", "Beach", "Mountain", "Jungle", "Temple", "Museum", "Stadium", "park"],
 
-    actions: ["running", "sleeping", "jumping", "dancing", "swimming", "crying", "eating", "laughing", "driving", "fighting"]
+    actions: ["Running", "Sleeping", "Jumping", "Dancing", "Swimming", "Crying", "Eating", "Laughing", "Driving", "Fighting"]
 }
 
 export default words;

@@ -16,24 +16,21 @@ const DrawBoard = () => {
     const [color, setColor] = useState("black");
 
     const [brushSize, setBrushSize] = useState(5);
+    const [hiddenWord, setHiddenWord] = useState("");
     const [currentDrawerId, setCurrentDrawerId] = useState(null);
 
     const [showWordDialog, setShowWordDialog] = useState(false);
     const [wordOptions, setWordOptions] = useState([]);
 
+    const [showRoundEnd, setshowRoundEnd] = useState(false);
+    const [revealedWord, setRevealedWord] = useState("");
+
+    let [maxRounds, setMaxRounds] = useState("-")
     const [round, setRound] = useState(1);
-    const [time, setTime] = useState(75);
+    let [time, setTime] = useState("-");
     const [word, setWord] = useState("");
 
     useEffect(() => {
-
-        console.log(
-            "DRAWBOARD MOUNTED",
-            socket.id
-        );
-        socket.onAny((event, ...args) => {
-            console.log("EVENT:", event, args);
-        });
         const canvas = canvasRef.current;
         const ctx = canvas.getContext("2d");
 
@@ -47,25 +44,27 @@ const DrawBoard = () => {
         });
 
         socket.on("game_state", (data) => {
-            console.log("GAME_STATE RECEIVED", data);
-
             setRound(data.currentRound);
             setTime(data.timeLeft);
             setWord(data.word);
+            setMaxRounds(data.maxRounds)
             setCurrentDrawerId(data.drawerId);
+            setHiddenWord(data.word);
         });
 
         socket.on("round_end", ({ word }) => {
-            console.log("Word was:", word);
+            setshowRoundEnd(true);
+            setRevealedWord(word);
+            setTimeout(()=>{
+                setshowRoundEnd(false);
+            },5000);
         });
 
         socket.on("new_round", (data) => {
-            console.log("Round:", data.round);
+            setRevealedWord("");
         })
 
-        console.log("REGISTERING CHOOSE_WORD LISTENER");
         socket.on("choose_word", ({ words }) => {
-            console.log("CHOOSE WORD RECEIVED", words);
             setWordOptions(words);
             setShowWordDialog(true);
         });
@@ -76,7 +75,6 @@ const DrawBoard = () => {
             socket.off("choose_word");
             socket.off("round_end");
             socket.off("new_round");
-            socket.offAny();
         };
 
     }, []);
@@ -124,10 +122,25 @@ const DrawBoard = () => {
         ctx.moveTo(x, y);
     }
 
+    if (showRoundEnd) {
+        return (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50">
+                <div className='flex flex-col font-bold text-5xl text-white justify-center items-center gap-10'>
+                    <h1 className="text-4xl md:text-6xl font-extrabold  text-white/30 font-serif">
+                        Word Was
+                    </h1>
+                    <div className='bg-purple-600/20  max-w-md flex justify-center items-center p-5 rounded-2xl border-purple-950/20 border-2 font-serif'>
+                        {revealedWord}
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <div className='flex flex-col justify-center items-center w-full min-h-screen gap-4'>
 
-            <WordBox round={round} time={time} word={word} />
+            <WordBox round={round} time={time} maxRounds={maxRounds} word={word} drawerId={currentDrawerId} />
 
             <canvas ref={canvasRef} width={800} height={600} onMouseDown={startDrawing} onMouseUp={stopDrawing}
                 onMouseMove={draw} onMouseLeave={stopDrawing}

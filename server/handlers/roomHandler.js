@@ -128,6 +128,10 @@ const roomHandler = (io, socket) => {
                 hostId: room.hostId
             });
 
+            if (room.gameStarted && room.players.length < 2) {
+                room.gameManager.endGame(io);
+            }
+
             if (room.isEmpty()) {
                 roomManager.deleteRoom(roomCode);
             }

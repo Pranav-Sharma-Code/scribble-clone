@@ -14,13 +14,26 @@ export default class GameManager {
         this.status = "waiting";
     }
 
-    startGame() {
+    startGame(io) {
         console.log("GAME STARTED");
         console.log("PLAYERS:", this.room.players);
-        
+
         const firstDrawer = this.room.players[this.currentDrawerIndex];
         this.currentDrawerId = firstDrawer.id;
         const wordOptions = this.getRandomWords(3);
+
+        this.wordSelectionTimer = setTimeout(() => {
+            if (!this.currentWord) {
+                this.currentWord = wordOptions[0];
+                io.to(this.room.roomCode).emit("word_selected", {
+                    wordLength: wordOptions[0].length
+                });
+                io.to(this.currentDrawerId).emit("drawer_word", {
+                    word: wordOptions[0]
+                });
+                this.startTimer(io);
+            }
+        }, 15000)
 
         this.room.gameStarted = true;
         this.status = "playing";
@@ -75,7 +88,18 @@ export default class GameManager {
     }
 
     nextTurn(io) {
+        if (this.room.players.length === 0) {
+            return;
+        }
 
+        if (this.currentDrawerIndex >= this.room.players.length) {
+            this.currentDrawerIndex = 0;
+        }
+        clearTimeout(this.wordSelectionTimer);
+        console.log("=== NEXT TURN ===");
+        console.log("Players:", this.room.players);
+        console.log("Length:", this.room.players.length);
+        console.log("Current Index:", this.currentDrawerIndex);
         this.currentDrawerIndex++;
         this.currentWord = null;
         this.guessedPlayers = [];
@@ -89,8 +113,14 @@ export default class GameManager {
             return this.endGame(io);
         }
 
-
         const drawer = this.room.players[this.currentDrawerIndex];
+        if (!drawer) {
+            console.log("DRAWER NOT FOUND");
+            console.log(this.room.players);
+            console.log(this.currentDrawerIndex);
+            return;
+        }
+
         this.currentDrawerId = drawer.id;
         const wordOptions = this.getRandomWords(3);
 
@@ -102,6 +132,19 @@ export default class GameManager {
         io.to(drawer.id).emit("choose_word", {
             words: wordOptions
         });
+
+        this.wordSelectionTimer = setTimeout(() => {
+            if (!this.currentWord) {
+                this.currentWord = wordOptions[0];
+                io.to(this.room.roomCode).emit("word_selected", {
+                    wordLength: wordOptions[0].length
+                });
+                io.to(drawer.id).emit("drawer_word", {
+                    word: wordOptions[0]
+                });
+                this.startTimer(io);
+            }
+        }, 15000);
     }
 
     endGame(io) {

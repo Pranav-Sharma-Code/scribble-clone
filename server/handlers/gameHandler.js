@@ -21,7 +21,7 @@ const gameHandler = (io, socket) => {
 
         room.gameStarted = true;
 
-        const gameState = room.gameManager.startGame();
+        const gameState = room.gameManager.startGame(io);
         console.log("GAME STATE:", gameState);
 
         room.gameManager.emitGameState(io);
@@ -48,11 +48,12 @@ const gameHandler = (io, socket) => {
         const room = roomManager.getRoom(roomCode);
         if (!room) return;
         if (room.gameManager.currentDrawerId !== socket.id) return;
+        clearTimeout(room.gameManager.wordSelectionTimer);
         room.gameManager.currentWord = word;
 
         room.gameManager.startTimer(io);
-        console.log("SENDING CHOOSE_WORD");
         io.to(roomCode).emit("word_selected", { wordLength: word.length });
+        io.to(socket.id).emit("drawer_word",{ word });
     });
 
 

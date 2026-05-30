@@ -10,7 +10,6 @@ const GuessWord = ({ roomCode }) => {
 
   useEffect(() => {
     socket.on("guess_correct", (data) => {
-      console.log("CORRECT EVENT:", data);
       if (data.playerId === socket.id) {
         setMessage(`+${data.scoreEarned} Points`);
         setIsCorrect(true);
@@ -29,7 +28,6 @@ const GuessWord = ({ roomCode }) => {
 
 
     socket.on("guess_wrong", ({ guess }) => {
-      console.log(`wrong guess: ${guess}`);
       setMessage(guess);
       setIsCorrect(false);
     });
@@ -40,6 +38,8 @@ const GuessWord = ({ roomCode }) => {
 
     return () => {
       socket.off("guess_correct");
+      socket.off("word_selected");
+      socket.off("new_round")
       socket.off("leaderboard_update");
       socket.off("guess_wrong");
     };

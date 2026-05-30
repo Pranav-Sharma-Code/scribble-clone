@@ -1,16 +1,19 @@
+import React, { useEffect, useState } from "react";
 import socket from "../socket/socket";
 
 const ChooseWord = ({ words, roomCode, setOpen }) => {
 
+    const [showWordDialog, setShowWordDialog] = useState(false);
+
+    useEffect(() =>{
+        socket.on("word_selected",()=>{
+            setShowWordDialog(false);
+        })
+    })
+
     const selectWord = (word) => {
-
-    socket.emit("choose_word", {
-        roomCode,
-        word
-    });
-
+    socket.emit("choose_word", { roomCode, word });
     setOpen(false);
-
     };
 
     return (
