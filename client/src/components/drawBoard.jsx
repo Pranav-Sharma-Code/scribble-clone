@@ -263,9 +263,9 @@ const DrawBoard = () => {
                     <h1 className="text-4xl md:text-6xl font-extrabold  text-white/30 font-serif cursor-default">
                         Word Was
                     </h1>
-                    <div className='bg-purple-600/20  max-w-md flex justify-center items-center p-5 rounded-2xl
-                     border-purple-950/20 border-2 font-serif cursor-pointer animate-[wordReveal_1.0s_ease-out]'>
-                        {revealedWord}
+                    <div className='bg-purple-600/20  max-w-2xl flex justify-center items-center p-5 rounded-2xl
+                     border-purple-950/20 border-2 font-serif cursor-default animate-[wordReveal_1.0s_ease-out]'>
+                        {revealedWord.replace(/\+/g, ' ').replace(/\s+/g, ' ')}
                     </div>
                 </div>
             </div>

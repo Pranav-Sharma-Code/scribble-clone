@@ -20,7 +20,8 @@ const ChooseWord = ({ words = [], roomCode, setOpen }) => {
                     <button
                         key={`${word}-${index}`}
                         onClick={() => selectWord(word)}
-                        className="w-full p-4 rounded-xl bg-purple-500 text-white text-xl font-semibold hover:bg-purple-600 transition"
+                        className="w-full p-4 rounded-xl bg-purple-700 text-white cursor-pointer text-xl 
+                        font-semibold hover:bg-purple-700 active:scale-95 transition duration-100"
                     >
                         {word}
                     </button>

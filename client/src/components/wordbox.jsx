@@ -38,18 +38,18 @@ const WordBox = (props) => {
 
             {/* ----------WORD------------ */}
 
-            <div className="flex flex-col items-center cursor-default">
+            <div className="flex flex-col items-center whitespace-nowrap cursor-default">
                 <h1 className="text-white text-sm md:text-lg font-bold tracking-widest drop-shadow-md cursor-default">
                     WORD
                 </h1>
 
-                <div className="flex gap-2 mt-2 flex-wrap justify-center cursor-default">
+                <div className="flex gap-1 mt-2 flex-wrap justify-center whitespace-nowrap cursor-default">
                     {(socket.id === props.drawerId ? word : props.word)
                         ?.split("")
                         .map((char, index) => (
                             <span
                                 key={index}
-                                className="text-white text-xl md:text-2xl font-bold w-3 md:w-3 text-center pb-1 shadow-sm cursor-default"
+                                className="text-white text-base md:text-lg lg:text-xl font-bold min-w-4 text-center pb-1 shadow-sm cursor-default"
                             >
                                 {char === " " ? "\u00A0" : char}
                             </span>
