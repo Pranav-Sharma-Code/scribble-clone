@@ -102,9 +102,20 @@ const DrawBoard = () => {
             setRound(data.currentRound);
             setTime(data.timeLeft);
             setWord(data.word);
+            console.log("GAME STATE WORD:", data.word);
             setMaxRounds(data.maxRounds)
             setCurrentDrawerId(data.drawerId);
             setHiddenWord(data.word);
+        });
+
+        socket.on("word_selected", () => {
+            console.log("PARENT CLOSED POPUP");
+            setShowWordDialog(false);
+        });
+
+        socket.on("hint_reveal", ({ displayWord }) => {
+            console.log("HINT:", displayWord);
+            setWord(displayWord);
         });
 
         socket.on("round_end", ({ word }) => {
@@ -134,6 +145,9 @@ const DrawBoard = () => {
             socket.off("canvas_state");
 
             socket.off("game_state");
+            socket.off("word_selected");
+            socket.off("hint_reveal");
+
             socket.off("choose_word");
             socket.off("round_end");
             socket.off("new_round");

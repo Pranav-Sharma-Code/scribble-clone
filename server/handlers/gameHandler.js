@@ -44,15 +44,17 @@ const gameHandler = (io, socket) => {
     // ----------------Word-------------------------
 
     socket.on("choose_word", ({ roomCode, word }) => {
-
         const room = roomManager.getRoom(roomCode);
         if (!room) return;
         if (room.gameManager.currentDrawerId !== socket.id) return;
         clearTimeout(room.gameManager.wordSelectionTimer);
-        room.gameManager.currentWord = word;
 
+        room.gameManager.currentWord = word;
+        room.gameManager.displayWord = room.gameManager.generateDisplayWord();
+        room.gameManager.revealedIndexes = [];
         room.gameManager.startTimer(io);
-        io.to(roomCode).emit("word_selected", { wordLength: word.length });
+
+        io.to(roomCode).emit("word_selected", { displayWord: room.gameManager.displayWord });
         io.to(socket.id).emit("drawer_word",{ word });
     });
 
@@ -69,7 +71,7 @@ const gameHandler = (io, socket) => {
         if (socket.id === game.currentDrawerId) return;
         if (game.guessedPlayers.includes(socket.id)) return;
 
-        if (guess.toLowerCase().trim() === game.currentWord.toLowerCase().trim()) {
+        if (guess.toLowerCase().trim() === game.currentWord.replace(/\+/g, ' ').replace(/\s+/g, ' ').toLowerCase().trim()) {
             const player = room.getPlayer(socket.id);
             game.handleCorrectGuess(player, io);
         }

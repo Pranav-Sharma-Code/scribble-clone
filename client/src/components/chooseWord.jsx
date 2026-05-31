@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from "react";
 import socket from "../socket/socket";
 
-const ChooseWord = ({ words, roomCode, setOpen }) => {
-
-    const [showWordDialog, setShowWordDialog] = useState(false);
-
-    useEffect(() =>{
-        socket.on("word_selected",()=>{
-            setShowWordDialog(false);
-        })
-    })
+const ChooseWord = ({ words = [], roomCode, setOpen }) => {
 
     const selectWord = (word) => {
     socket.emit("choose_word", { roomCode, word });
@@ -24,9 +16,9 @@ const ChooseWord = ({ words, roomCode, setOpen }) => {
                     Choose a Word
                 </h2>
 
-                {words.map((word) => (
+                {words.map((word, index) => (
                     <button
-                        key={word}
+                        key={`${word}-${index}`}
                         onClick={() => selectWord(word)}
                         className="w-full p-4 rounded-xl bg-purple-500 text-white text-xl font-semibold hover:bg-purple-600 transition"
                     >

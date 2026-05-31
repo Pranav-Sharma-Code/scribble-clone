@@ -1,4 +1,5 @@
-import words from "../data/Words.js";
+import WordManager from "../utils/WordManager.js";
+import HintManager from "../utils/HintManager.js";
 
 
 export default class GameManager {
@@ -12,59 +13,30 @@ export default class GameManager {
         this.currentWord = null;
         this.guessedPlayers = [];
         this.status = "waiting";
+        this.displayWord = "";
+        this.revealedIndexes = [];
+        this.hintTimers = [];
+        this.wordSelectionTimer = null;
     }
 
     startGame(io) {
-        console.log("GAME STARTED");
-        console.log("PLAYERS:", this.room.players);
-
         const firstDrawer = this.room.players[this.currentDrawerIndex];
         this.currentDrawerId = firstDrawer.id;
-        const wordOptions = this.getRandomWords(3);
-
-        this.wordSelectionTimer = setTimeout(() => {
-            if (!this.currentWord) {
-                this.currentWord = wordOptions[0];
-                io.to(this.room.roomCode).emit("word_selected", {
-                    wordLength: wordOptions[0].length
-                });
-                io.to(this.currentDrawerId).emit("drawer_word", {
-                    word: wordOptions[0]
-                });
-                this.startTimer(io);
-            }
-        }, 15000)
 
         this.room.gameStarted = true;
         this.status = "playing";
-
-        console.log("DRAWER:", this.currentDrawerId);
-        console.log("WORDS:", wordOptions);
+        this.startWordSelection(io);
 
         return {
             round: this.currentRound,
-            drawerId: this.currentDrawerId,
-            wordOptions
+            drawerId: this.currentDrawerId
         };
     }
 
-    getRandomWords(count = 3) {
-
-        const categories = Object.keys(words);
-        const selectedWords = [];
-
-        while (selectedWords.length < count) {
-
-            const categary = categories[Math.floor(Math.random() * categories.length)];
-            const arr = words[categary];
-            const word = arr[Math.floor(Math.random() * arr.length)]
-            if (!selectedWords.includes(word)) selectedWords.push(word);
-        }
-        return selectedWords;
-    }
 
     startTimer(io) {
         this.timeLeft = this.room.settings.drawTime;
+        this.scheduleHints(io);
         this.timer = setInterval(() => {
             this.timeLeft--;
             this.emitGameState(io);
@@ -77,36 +49,103 @@ export default class GameManager {
     }
 
     endRound(io) {
-
+        this.hintTimers.forEach(timer => clearTimeout(timer));
+        this.hintTimers = [];
         io.to(this.room.roomCode).emit("round_end", {
             word: this.currentWord
         });
-
         setTimeout(() => {
             this.nextTurn(io);
         }, 5000);
     }
 
+    startWordSelection(io) {
+        const drawer = this.room.players.find(player => player.id === this.currentDrawerId);
+        if (!drawer) return;
+
+        const wordOptions = [];
+
+        for (let i = 0; i < this.room.settings.wordCount; i++) {
+            wordOptions.push(this.generateRoundWord());
+        }
+
+        setTimeout(() => {
+            io.to(drawer.id).emit("choose_word", { words: wordOptions });
+        },1000);
+        this.wordSelectionTimer = setTimeout(() => {
+            if (this.currentWord) return;
+            this.currentWord = wordOptions[0];
+            this.displayWord = this.generateDisplayWord();
+            this.revealedIndexes = [];
+            io.to(this.room.roomCode).emit("word_selected", { displayWord: this.displayWord });
+            io.to(drawer.id).emit("drawer_word", { word: wordOptions[0] });
+            this.startTimer(io);
+        }, 15000);
+    }
+
+    generateRoundWord() {
+        const mode = this.room.settings.gameMode;
+        const category = this.room.settings.category;
+        if (mode.toLowerCase() === "combination") {
+            return WordManager.getCombinationWord(category);
+        }
+        return WordManager.getRandomWords(1, category)[0];
+    }
+
+    scheduleHints(io) {
+        if (!this.room.settings.hintsEnabled) return;
+        if (this.room.settings.gameMode.toLowerCase() === "hidden") return;
+
+        const drawTime = this.room.settings.drawTime;
+        const firstHintTime = Math.floor(drawTime * 0.35) * 1000;
+        const secondHintTime = Math.floor(drawTime * 0.70) * 1000;
+        const hint1 = setTimeout(() => { this.revealHint(io) }, firstHintTime);
+        const hint2 = setTimeout(() => { this.revealHint(io); }, secondHintTime);
+
+        this.hintTimers.push(hint1, hint2);
+    }
+
+    revealHint(io) {
+
+        if (!HintManager.canReveal(this.revealedIndexes, this.room.settings.hintCount)) return;
+
+        const result = HintManager.revealLetter(
+            this.currentWord,
+            this.displayWord,
+            this.revealedIndexes
+        );
+
+        this.displayWord = result.displayWord;
+
+        this.revealedIndexes = result.revealedIndexes;
+
+        io.to(this.room.roomCode).emit("hint_reveal", {
+            displayWord: this.displayWord,
+            revealedIndex: result.revealedIndex
+        });
+    }
+
     nextTurn(io) {
 
-        if (this.room.players.length === 0) {
-            return;
-        }
-        
+        if (this.room.players.length === 0) return;
+
         this.room.canvasStrokes = [];
         io.to(this.room.roomCode).emit("canvas_clear");
-    
+
         if (this.currentDrawerIndex >= this.room.players.length) {
             this.currentDrawerIndex = 0;
         }
         clearTimeout(this.wordSelectionTimer);
-        console.log("=== NEXT TURN ===");
-        console.log("Players:", this.room.players);
-        console.log("Length:", this.room.players.length);
-        console.log("Current Index:", this.currentDrawerIndex);
         this.currentDrawerIndex++;
         this.currentWord = null;
+        this.displayWord = "";
+        this.revealedIndexes = [];
         this.guessedPlayers = [];
+        this.displayWord = "";
+        this.revealedIndexes = [];
+
+        this.hintTimers.forEach(timer => clearTimeout(timer));
+        this.hintTimers = [];
 
         if (this.currentDrawerIndex >= this.room.players.length) {
             this.currentDrawerIndex = 0;
@@ -126,32 +165,18 @@ export default class GameManager {
         }
 
         this.currentDrawerId = drawer.id;
-        const wordOptions = this.getRandomWords(3);
-
         io.to(this.room.roomCode).emit("new_round", {
             round: this.currentRound,
             drawerId: this.currentDrawerId
         });
+        this.startWordSelection(io);
 
-        io.to(drawer.id).emit("choose_word", {
-            words: wordOptions
-        });
-
-        this.wordSelectionTimer = setTimeout(() => {
-            if (!this.currentWord) {
-                this.currentWord = wordOptions[0];
-                io.to(this.room.roomCode).emit("word_selected", {
-                    wordLength: wordOptions[0].length
-                });
-                io.to(drawer.id).emit("drawer_word", {
-                    word: wordOptions[0]
-                });
-                this.startTimer(io);
-            }
-        }, 15000);
     }
 
     endGame(io) {
+        clearInterval(this.timer);
+        this.hintTimers.forEach(timer => clearTimeout(timer));
+        this.hintTimers = [];
         this.room.gameStarted = false;
         this.status = "finished";
         const leaderboard = [...this.room.players].sort((a, b) => b.score - a.score);
@@ -162,6 +187,16 @@ export default class GameManager {
         });
     }
 
+    generateDisplayWord() {
+        const mode = this.room.settings.gameMode;
+        if (mode.toLowerCase() === "hidden") {
+            return "";
+        }
+        return WordManager.createDisplayWord(
+            this.currentWord
+        );
+    }
+
     handleCorrectGuess(player, io) {
 
         if (this.guessedPlayers.includes(player.id)) return;
@@ -170,16 +205,12 @@ export default class GameManager {
         player.score += this.timeLeft * 5;
 
         const drawer = this.room.players.find(p => p.id === this.currentDrawerId);
-
         if (drawer) {
             drawer.score += Math.floor(this.timeLeft * 2);
         }
 
         io.to(this.room.roomCode).emit("leaderboard_update", this.room.players);
-
         io.to(this.room.roomCode).emit("guess_correct", { playerId: player.id, playerName: player.name, score: player.score, scoreEarned: this.timeLeft * 5 });
-
-
 
         const remainingPlayers = this.room.players.filter(
             p => p.id !== this.currentDrawerId);
@@ -199,9 +230,7 @@ export default class GameManager {
             drawerId: this.currentDrawerId,
             timeLeft: this.timeLeft,
             guessedPlayers: this.guessedPlayers,
-            word: this.currentWord
-                ? "_".repeat(this.currentWord.length)
-                : ""
+            word: this.displayWord
         }
         );
     }

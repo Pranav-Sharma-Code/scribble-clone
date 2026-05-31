@@ -16,6 +16,12 @@ const WordBox = (props) => {
         }
     }, [])
 
+    useEffect(() => {
+        if (socket.id !== props.drawerId) {
+            setWord("");
+        }
+    }, [props.drawerId]);
+
     return (
 
         <div className=' w-full max-w-[800px] min-h-[80px] rounded-xl bg-slate-700/95 border-2 
@@ -39,7 +45,7 @@ const WordBox = (props) => {
                 {/* ------------ Hidden Word / Revealed Word ----------- */}
                 <div className="flex gap-2 mt-2 flex-wrap justify-center">
                     {(socket.id === props.drawerId ? word : props.word)
-                        ?.split("") 
+                        ?.split("")
                         .map((char, index) => (
                             <span
                                 key={index}
