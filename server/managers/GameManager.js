@@ -7,16 +7,21 @@ export default class GameManager {
         this.room = room;
         this.currentRound = 1;
         this.currentDrawerIndex = 0;
+
         this.currentDrawerId = null;
         this.timeLeft = room.settings.drawTime;
+
         this.timer = null
         this.currentWord = null;
         this.guessedPlayers = [];
+
         this.status = "waiting";
         this.displayWord = "";
+
         this.revealedIndexes = [];
         this.hintTimers = [];
         this.wordSelectionTimer = null;
+
         this.endRoundTimer = null;
         this.wordSelectionDelayTimer = null;
     }
@@ -25,23 +30,31 @@ export default class GameManager {
         clearInterval(this.timer);
         clearTimeout(this.wordSelectionTimer);
         clearTimeout(this.endRoundTimer);
+
         clearTimeout(this.wordSelectionDelayTimer);
         this.hintTimers.forEach(timer => clearTimeout(timer));
+
         this.hintTimers = [];
         this.currentRound = 1;
         this.currentDrawerIndex = 0;
+
         this.currentDrawerId = null;
         this.timeLeft = this.room.settings.drawTime;
+
         this.timer = null;
         this.currentWord = null;
+
         this.guessedPlayers = [];
         this.status = "waiting";
         this.displayWord = "";
+
         this.revealedIndexes = [];
         this.endRoundTimer = null;
         this.wordSelectionTimer = null;
         this.wordSelectionDelayTimer = null;
     }
+
+
 
     startGame(io) {
         this.reset();
@@ -64,6 +77,7 @@ export default class GameManager {
     startTimer(io) {
         this.timeLeft = this.room.settings.drawTime;
         this.scheduleHints(io);
+
         this.timer = setInterval(() => {
             this.timeLeft--;
             this.emitGameState(io);
@@ -78,9 +92,11 @@ export default class GameManager {
     endRound(io) {
         this.hintTimers.forEach(timer => clearTimeout(timer));
         this.hintTimers = [];
+
         io.to(this.room.roomCode).emit("round_end", {
             word: this.currentWord
         });
+
         this.endRoundTimer = setTimeout(() => {
             this.nextTurn(io);
         }, 5000);
@@ -98,12 +114,15 @@ export default class GameManager {
 
         this.wordSelectionDelayTimer = setTimeout(() => {
             io.to(drawer.id).emit("choose_word", { words: wordOptions });
-        },1000);
+        }, 1000);
+
         this.wordSelectionTimer = setTimeout(() => {
             if (this.currentWord) return;
             this.currentWord = wordOptions[0];
+
             this.displayWord = this.generateDisplayWord();
             this.revealedIndexes = [];
+
             io.to(this.room.roomCode).emit("word_selected", { displayWord: this.displayWord });
             io.to(drawer.id).emit("drawer_word", { word: wordOptions[0] });
             this.startTimer(io);
@@ -113,6 +132,7 @@ export default class GameManager {
     generateRoundWord() {
         const mode = this.room.settings.gameMode;
         const category = this.room.settings.category;
+
         if (mode.toLowerCase() === "combination") {
             return WordManager.getCombinationWord(category);
         }
@@ -126,6 +146,7 @@ export default class GameManager {
         const drawTime = this.room.settings.drawTime;
         const firstHintTime = Math.floor(drawTime * 0.35) * 1000;
         const secondHintTime = Math.floor(drawTime * 0.70) * 1000;
+
         const hint1 = setTimeout(() => { this.revealHint(io) }, firstHintTime);
         const hint2 = setTimeout(() => { this.revealHint(io); }, secondHintTime);
 
@@ -143,7 +164,6 @@ export default class GameManager {
         );
 
         this.displayWord = result.displayWord;
-
         this.revealedIndexes = result.revealedIndexes;
 
         io.to(this.room.roomCode).emit("hint_reveal", {
@@ -166,6 +186,7 @@ export default class GameManager {
         clearTimeout(this.wordSelectionTimer);
         this.currentDrawerIndex++;
         this.currentWord = null;
+
         this.displayWord = "";
         this.revealedIndexes = [];
         this.guessedPlayers = [];
@@ -199,11 +220,14 @@ export default class GameManager {
         clearInterval(this.timer);
         clearTimeout(this.wordSelectionTimer);
         clearTimeout(this.endRoundTimer);
+
         clearTimeout(this.wordSelectionDelayTimer);
         this.hintTimers.forEach(timer => clearTimeout(timer));
+
         this.hintTimers = [];
         this.room.gameStarted = false;
         this.status = "finished";
+
         const leaderboard = [...this.room.players].sort((a, b) => b.score - a.score);
 
         io.to(this.room.roomCode).emit("game_over", {
@@ -233,8 +257,13 @@ export default class GameManager {
         if (drawer) {
             drawer.score += Math.floor(this.timeLeft * 2);
         }
-        
-        io.to(this.room.roomCode).emit("guess_correct", { playerId: player.id, playerName: player.name, score: player.score, scoreEarned: this.timeLeft * 5 });
+
+        io.to(this.room.roomCode).emit("guess_correct", {
+            playerId: player.id,
+            playerName: player.name,
+            score: player.score,
+            scoreEarned: this.timeLeft * 5
+        });
 
         io.to(this.room.roomCode).emit("leaderboard_update",
             [...this.room.players].sort((a, b) => b.score - a.score)

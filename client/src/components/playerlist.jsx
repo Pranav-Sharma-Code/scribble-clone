@@ -10,38 +10,39 @@ const PlayerList = (props) => {
 
             {/* Header */}
 
-            <div className=" p-4 border-b border-white/10 text-center">
-                <h2 className="text-white font-black text-xl">
+            <div className="p-3 border-b border-white/10 text-center">
+                <h2 className="text-white font-black text-lg">
                     PLAYERS
                 </h2>
 
-                <p className="text-white/50 text-sm">
+                <p className="text-white/50 text-xs">
                     {props.players?.length || 0} Players
                 </p>
             </div>
 
             {/* Players */}
 
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            <div className="flex lg:flex-col gap-1 overflow-y-auto p-2 space-y-1.5">
                 {props.players.map((player) => (
                         <div key={player.id}
-                             className={`p-3 rounded-xl flex items-center gap-3 justify-between ${ (player.id === props.drawerId)
+                             className={`p-2 rounded-xl flex items-center gap-2 justify-between ${ (player.id === props.drawerId)
                                                                                                  ? "bg-yellow-500/20 border border-yellow-400 shadow-lg shadow-yellow-500/20"
                                                                                                  : "bg-white/10"
                                 }`}>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
                                 <Avatar
                                     emoji={player.avatar || "😀"}/>
                                 <div>
-                                    <div className="flex flex-col items-center gap-2">
-                                        <span className="text-white font-bold">
-                                            {player.name}
-                                        </span>
-                                        {player.id === props.hostId && <span className='text-amber-600 font-bold'>Host</span>}
-                                        {player.id === props.drawerId && <span>✏️</span>}
+                                    <div className="flex flex-col">
+                                        <div className="text-white font-bold gap-1text-sm">
+                                            {player.name.charAt(0).toUpperCase() + player.name.slice(1) || ""}
+                                            {player.id === props.hostId && <span className='text-amber-500 font-bold ml-2' style={{ fontSize: "17px"}}>H</span>}
+                                        </div>
+                    
                                     </div>
-                                    <p className="text-yellow-300 text-sm">
-                                        Points: {player.score}
+                                    <p className="text-yellow-300 text-xs flex gap-2 left-1 font-bold">
+                                        {player.score} pts
+                                        {player.id === props.drawerId && <span className='text-xs'>✏️</span>}
                                     </p>
                                 </div>
                             </div>

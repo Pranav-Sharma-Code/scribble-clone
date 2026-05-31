@@ -2,7 +2,6 @@ import roomManager from "../managers/RoomManager.js";
 
 const chatHandler = (io, socket) => {
 
-    // ---------------- CHAT MESSAGE ----------------
 
     socket.on("chat", ({ roomCode, text }) => {
         const room = roomManager.getRoom(roomCode);

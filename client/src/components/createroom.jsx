@@ -148,7 +148,7 @@ const CreateRoom = ({ setOpen }) => {
         <div className='flex justify-center mt-10'>
           <button
             onClick={createRoom}
-            className='bg-blue-600 hover:bg-blue-700 hover:scale-95 active:scale-90 transition-all duration-200 text-white font-black text-xl px-10 py-4 rounded-2xl shadow-lg cursor-pointer'
+            className='bg-blue-800 hover:bg-blue-600 hover:scale-95 active:scale-90 transition-all duration-200 text-white font-black text-xl px-10 py-4 rounded-2xl shadow-lg cursor-pointer'
           >
             Create Room
           </button>

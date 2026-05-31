@@ -52,13 +52,13 @@ const ChatBox = ({ roomCode }) => {
 
     <div className="w-full h-full bg-black/30 backdrop-blur-lg rounded-2xl overflow-hidden flex flex-col">
 
-      <div className=" p-4 border-b border-white/10 flex justify-center">
-        <h2 className=" text-white font-black text-xl">
+      <div className="p-3 border-b border-white/10 flex justify-center">
+        <h2 className="text-white font-black text-lg">
           CHAT
         </h2>
       </div>
 
-      {/* Messages */}
+      {/* ------- Messages --------- */}
 
       <div
         className="flex-1 overflow-y-auto px-3 py-2 space-y-2">
@@ -102,10 +102,7 @@ const ChatBox = ({ roomCode }) => {
 
       </div>
 
-      {/* Input */}
-
-      <div className=" border-t border-white/10 p-3 flex gap-2">
-
+      <div className="border-t border-white/10 p-2">
         <input value={message} maxLength={150}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => {
@@ -113,14 +110,8 @@ const ChatBox = ({ roomCode }) => {
               sendMessage();
             }
           }}
-          placeholder="Type a message..."
-          className="flex-1  bg-white rounded-xl px-3 py-2 outline-none" />
-
-        <button  onClick={sendMessage}
-          className="bg-blue-500  hover:bg-blue-600 text-white font-bold px-4 rounded-xl">
-          Send
-        </button>
-
+          placeholder="Type & press Enter..."
+          className="w-full bg-white rounded-xl px-3 py-2 outline-none text-sm" />
       </div>
 
     </div>

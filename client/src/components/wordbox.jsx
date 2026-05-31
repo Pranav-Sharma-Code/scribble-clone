@@ -12,7 +12,6 @@ const WordBox = (props) => {
         };
 
         socket.on("drawer_word", handleDrawerWord);
-
         return () => {
             socket.off("drawer_word", handleDrawerWord);
         };
@@ -26,10 +25,10 @@ const WordBox = (props) => {
 
     return (
 
-        <div className=' w-full max-w-[800px] min-h-[80px] rounded-xl bg-slate-700/95 border-2 
-                   border-slate-700 flex justify-center items-center px-4 py-2 shadow-2xl gap-20'>
+        <div className=' w-full max-w-[800px] min-h-[60px] md:min-h-[80px] rounded-xl bg-slate-700/95 border-2 
+                   border-slate-700 flex justify-evenly items-center px-2 md:px-4 py-2 shadow-2xl gap-4 md:gap-16'>
 
-            {/* -------------ROUND--------------- */}
+        
 
             <div className='w-14 h-14 rounded-full bg-white flex flex-col items-center
                         justify-center border-4 border-black text-black font-bold'>
@@ -44,7 +43,6 @@ const WordBox = (props) => {
                     WORD
                 </h1>
 
-                {/* ------------ Hidden Word / Revealed Word ----------- */}
                 <div className="flex gap-2 mt-2 flex-wrap justify-center">
                     {(socket.id === props.drawerId ? word : props.word)
                         ?.split("")
@@ -60,7 +58,6 @@ const WordBox = (props) => {
                 </div>
             </div>
 
-            {/* ----------TIMER----------- */}
 
             <div className="w-24 h-12 bg-slate-800 rounded-xl border-2 border-slate-600 flex items-center justify-center shadow-lg">
                 <span className="text-white text-xl font-mono tracking-widest">

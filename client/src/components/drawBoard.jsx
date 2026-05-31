@@ -128,12 +128,15 @@ const DrawBoard = () => {
         socket.on("draw_start", handleDrawStart);
         socket.on("draw_move", handleDrawMove);
         socket.on("draw_undo", handleDrawUndo);
+
         socket.on("canvas_clear", handleCanvasClear);
         socket.on("canvas_state", handleCanvasState);
         socket.on("game_state", handleGameState);
+
         socket.on("word_selected", handleWordSelected);
         socket.on("hint_reveal", handleHintReveal);
         socket.on("round_end", handleRoundEnd);
+
         socket.on("new_round", handleNewRound);
         socket.on("choose_word", handleChooseWord);
         socket.on("game_over", handleGameOver);
@@ -143,12 +146,15 @@ const DrawBoard = () => {
             socket.off("draw_start", handleDrawStart);
             socket.off("draw_move", handleDrawMove);
             socket.off("draw_undo", handleDrawUndo);
+
             socket.off("canvas_clear", handleCanvasClear);
             socket.off("canvas_state", handleCanvasState);
             socket.off("game_state", handleGameState);
+
             socket.off("word_selected", handleWordSelected);
             socket.off("hint_reveal", handleHintReveal);
             socket.off("round_end", handleRoundEnd);
+
             socket.off("new_round", handleNewRound);
             socket.off("choose_word", handleChooseWord);
             socket.off("game_over", handleGameOver);
@@ -160,6 +166,7 @@ const DrawBoard = () => {
     const startDrawing = (event) => {
         if (socket.id !== currentDrawerId) return;
         setIsDrawing(true);
+        
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         const rect = canvas.getBoundingClientRect();
@@ -226,9 +233,9 @@ const DrawBoard = () => {
                             </div>
                         ))}
                     </div>
-                    <button onClick={() => navigate(`/room/${roomCode}`)}
+                    <button onClick={() => navigate('/')}
                         className='mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg px-8 py-3 rounded-2xl transition-all hover:scale-95'>
-                        Back to Lobby
+                        Home
                     </button>
                 </div>
             </div>
@@ -251,7 +258,7 @@ const DrawBoard = () => {
     }
 
     return (
-        <div className='flex flex-col justify-center items-center w-full min-h-screen gap-4'>
+        <div className='flex flex-col justify-center items-center w-full gap-2 md:gap-4 py-2'>
 
             <WordBox round={round} time={time} maxRounds={maxRounds} word={word} drawerId={currentDrawerId} />
 

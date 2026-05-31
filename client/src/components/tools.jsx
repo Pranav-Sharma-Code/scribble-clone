@@ -18,32 +18,33 @@ const Tools = ({ color, setColor, brushSize, setBrushSize, tool, setTool, roomCo
                <div className=' grid rounded-xl gap-2 cursor-pointer'>
                     <div className='flex gap-1'>
                          <button onClick={() => setColor("pink")}
-                              className='bg-pink-700 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 active:ring-2 active:ring-pink-300' />
+                              className={`bg-pink-700 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 ${(color === "pink") ? "ring-2 ring-pink-300":""}`} />
                          <button onClick={() => setColor("green")}
-                              className='bg-green-700 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 active:ring-2 active:ring-green-300' />
+                              className={`bg-green-700 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 ${(color === "green") ? "ring-2 ring-green-300":""}`} />
                          <button onClick={() => setColor("black")}
-                              className='bg-black w-10 h-10 rounded-xl hover:scale-90 transition duration-200 active:ring-2 active:ring-white' />
+                              className={`bg-black w-10 h-10 rounded-xl hover:scale-90 transition duration-200 ${(color === "black") ? "ring-2 ring-white/50":""}`} />
                          <button onClick={() => setColor("purple")}
-                              className='bg-purple-700 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 active:ring-2 active:ring-purple-300' />
+                              className={`bg-purple-700 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 ${(color === "purple") ? "ring-2 ring-purple-300":""}`} />
                          <button onClick={() => setColor("red")}
-                              className='bg-red-700 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 active:ring-2 active:ring-red-300' />
+                              className={`bg-red-700 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 ${(color === "red") ? "ring-2 ring-red-300":""}`}/>
                     </div>
                     <div className='flex gap-1'>
                          <button onClick={() => setColor("blue")}
-                              className='bg-blue-700 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 active:ring-2 active:ring-blue-300' />
+                              className={`bg-blue-700 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 ${(color === "blue") ? "ring-2 ring-blue-300":""}`} />
                          <button onClick={() => setColor("white")}
-                              className='bg-white w-10 h-10 rounded-xl hover:scale-90 transition duration-200 active:ring-2 active:ring-black' />
+                              className={`bg-white w-10 h-10 rounded-xl hover:scale-90 transition duration-200 ${(color === "white") ? "ring-2 ring-black/40":""}`}/>
                          <button onClick={() => setColor("orange")}
-                              className='bg-orange-500 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 active:ring-2 active:ring-orange-300' />
+                              className={`bg-orange-500 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 ${(color === "orange") ? "ring-2 ring-orange-300":""}`} />
                          <button onClick={() => setColor("yellow")}
-                              className='bg-yellow-500 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 active:ring-2 active:ring-yellow-300' />
+                              className={`bg-yellow-500 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 ${(color === "yellow") ? "ring-2 ring-yellow-300":""}`} />
                          <button onClick={() => setColor("brown")}
-                              className='bg-amber-950 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 active:ring-2 active:ring-amber-300' />
+                              className={`bg-amber-950 w-10 h-10 rounded-xl hover:scale-90 transition duration-200 ${(color === "brown") ? "ring-2 ring-brown-300":""}`} />
 
                     </div>
                </div>
 
                <div className='flex flex-col items-center justify-center gap-1 flex-wrap'>
+                    {/* --------------brush-size-------------- */}
                     <input type="range" min='1' max='20' value={brushSize}
                          onChange={(event) => setBrushSize(event.target.value)}
                          className='w-32 md:w-40 accent-blue-700 active:scale-115 transition duration-300

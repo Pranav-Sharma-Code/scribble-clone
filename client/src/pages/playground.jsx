@@ -19,12 +19,10 @@ const Playground = () => {
     };
 
     const handleLeaderboardUpdate = (updatedPlayers) => {
-      console.log("LEADERBOARD UPDATE", updatedPlayers);
       setPlayers(updatedPlayers);
     };
 
     const handlePlayerListUpdate = (data) => {
-      console.log("PLAYER LIST UPDATE", data);
       setPlayers(data.players || []);
       setHostId(data.hostId || "");
     };
@@ -50,8 +48,9 @@ const Playground = () => {
   }, [roomCode]);
 
   return (
-    <div className="flex justify-center items-center gap-2 h-screen p-4">
-      <div className="w-72 h-[600px]">
+    <div className="flex flex-col lg:flex-row justify-evenly items-center gap-2 min-h-screen w-full p-2 md:p-4">
+
+      <div className="w-full lg:w-52 xl:w-64 h-auto lg:h-[600px] order-1 lg:order-1">
         <PlayerList
           players={players}
           hostId={hostId}
@@ -59,9 +58,11 @@ const Playground = () => {
         />
       </div>
 
-      <DrawBoard />
+      <div className="flex-1 min-w-0 max-w-[700px] order-2">
+        <DrawBoard />
+      </div>
 
-      <div className="w-80 h-[600px]">
+      <div className="w-full lg:w-64 xl:w-72 h-[300px] lg:h-[600px] order-3">
         <ChatBox roomCode={roomCode} />
       </div>
 

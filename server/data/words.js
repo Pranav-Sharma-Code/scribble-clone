@@ -34,9 +34,9 @@ const words = {
         "Bangladesh", "Nepal", "Ukrain", "Wakanda", "Latveria", "UAE", "Egypt", "Africa", "Nigeria", "Argentina"],
 
     movieCharacters: ["Batman", "SpiderMan", "IronMan", "Superman", "Hulk", "Thor", "Loki", "Doom", "Homelander", "StarLight",
-        "Wolverine", "Deadpool", "Joker", "Flash", "Aquaman", "Shrek", "Minion", "Whitewalker", "Groot", "Starlord", "Odin", "Krator",
+        "Wolverine", "Deadpool", "Joker", "Flash", "Aquaman", "Shrek", "Minion", "Whitewalker", "Groot", "Starlord", "Odin", "Kratos",
         "Lucifer", "Thanos", "Daredevil", "Bahubali", "Galactus", "Humungousaur", "XLR8", "Diamondhead", "Ghost", "Atomix", "Mephisto",
-        "Hood", "Ace", "Ajak", "Antman", "Blackbolt", "Venom", "Punisher"],
+        "Hood", "Ace", "Ajak", "Antman", "Blackbolt", "Venom", "Punisher", "Pushpa", "Lannister", "Billi", "Megon", "Doramon", "Pokemon"],
 
     random: ["Volcano", "Robot", "Ninja", "Wizard", "Zombie", "Pirate", "Alien", "Error", "Vampire", "Samurai",
         "Meteor", "Planet", "Rainbow", "Diamond", "Treasure", "Cactus", "Lava", "Tornado", "Galaxy", "Comet", "Zoom",

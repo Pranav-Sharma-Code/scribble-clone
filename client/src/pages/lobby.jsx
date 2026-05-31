@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import socket from "../socket/socket";
+import toast from "react-hot-toast";
 
 const Lobby = () => {
 
@@ -88,7 +89,7 @@ const Lobby = () => {
                         </div>
 
                         <button
-                            onClick={() => { navigator.clipboard.writeText(roomCode) }}
+                            onClick={() => { navigator.clipboard.writeText(roomCode); toast.success("Room code copied!"); }}
                             className="group bg-purple-600 hover:bg-purple-700 active:scale-90 transition-all duration-200 px-4 py-3 rounded-xl shadow-lg cursor-pointer"
                         >
                             <span className="material-symbols-outlined text-white transition-all duration-300">
@@ -119,6 +120,7 @@ const Lobby = () => {
                                 navigator.clipboard.writeText(
                                     `${window.location.origin}/room/${roomCode}`
                                 );
+                                toast.success("Invite link copied!");
                             }}
                             className="group bg-purple-600 hover:bg-purple-700 active:scale-90 transition-all duration-200 px-4 py-3 rounded-xl shadow-lg cursor-pointer"
                         >

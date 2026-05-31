@@ -56,10 +56,10 @@ const Join = (props) => {
                     <h1 className='text-3xl font-bold text-purple-900/40 bg-purple-400/10 backdrop-blur-xs  p-4 rounded-2xl'>Code</h1>
                 </div>
                 <input type="text" value={roomCode} onChange={(event) => setRoomCode(event.target.value.toUpperCase())}
-                    className='w-full max-w-sm border-2 border-black/40 rounded-2xl p-2  text-2xl font-bold' placeholder='Enter Here...' />
+                    className='w-full max-w-sm border-2 border-black/40 rounded-2xl p-2  text-2xl font-bold ' placeholder='Enter Here...' />
 
                 <button onClick={() => joinRoom()}
-                    className='bg-blue-600 hover:bg-blue-700 hover:scale-95 active:scale-90 transition-all duration-200 text-white font-black text-xl px-10 py-4 rounded-2xl shadow-lg cursor-pointer'>
+                    className='bg-blue-800 hover:bg-blue-600 hover:scale-95 active:scale-90 transition-all duration-100 text-white font-black text-xl p-4 rounded-2xl shadow-lg cursor-pointer'>
                     Join
                 </button>
             </div>
