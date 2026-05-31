@@ -5,9 +5,6 @@ const gameHandler = (io, socket) => {
     // ----------Start Game--------------
 
     socket.on("start_game", ({ roomCode }) => {
-
-        console.log("======== START_GAME ========")
-
         const room = roomManager.getRoom(roomCode);
 
         if (!room) return;
@@ -18,28 +15,11 @@ const gameHandler = (io, socket) => {
                 "game_error", "Minimum 2 players required"
             );
         }
-
-        room.gameStarted = true;
-
-        const gameState = room.gameManager.startGame(io);
-        console.log("GAME STATE:", gameState);
-
+        room.gameManager.startGame(io);
         room.gameManager.emitGameState(io);
 
-        io.to(roomCode).emit("game_started", gameState);
-
-        console.log(
-            "EMITTING CHOOSE WORD TO:",
-            gameState.drawerId
-        );
-
-        setTimeout(() => {
-            io.to(gameState.drawerId).emit("choose_word", {
-                words: gameState.wordOptions
-            });
-        }, 500);
-        console.log("after io.emit ")
-    },);
+        io.to(roomCode).emit("game_started");
+    });
 
     // ----------------Word-------------------------
 

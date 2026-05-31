@@ -1,4 +1,4 @@
-import words from "../data/Words.js";
+import words from "../data/words.js";
 
 class WordManager {
 

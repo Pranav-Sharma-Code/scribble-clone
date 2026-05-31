@@ -6,11 +6,11 @@ const roomHandler = (io, socket) => {
 
     //----------Create Room------------
 
-    socket.on("create_room", ({ playerName, settings }, callback) => {
+    socket.on("create_room", ({ playerName, settings, avatar }, callback) => {
 
         const roomCode = generateRoomCode();
         const room = roomManager.createRoom(roomCode, socket.id, settings);
-        const player = new Player(socket.id, playerName);
+        const player = new Player(socket.id, playerName, avatar);
 
         room.addPlayer(player);
         room.settings = { ...room.settings, ...settings };
@@ -21,8 +21,7 @@ const roomHandler = (io, socket) => {
             roomCode,
         });
 
-        io.to(roomCode).emit(
-            "player_list_update",
+        io.to(roomCode).emit("player_list_update",
             {
                 players: room.players,
                 hostId: room.hostId,
@@ -33,10 +32,9 @@ const roomHandler = (io, socket) => {
     //---------Join Room----------
 
 
-    socket.on("join_room", ({ roomCode, playerName }, callback) => {
+    socket.on("join_room", ({ roomCode, playerName, avatar }, callback) => {
 
         const room = roomManager.getRoom(roomCode);
-        const player = new Player(socket.id, playerName);
 
         if (!room) {
             return callback({
@@ -66,6 +64,8 @@ const roomHandler = (io, socket) => {
                 success: true
             });
         }
+
+        const player = new Player(socket.id, playerName, avatar);
         room.addPlayer(player);
         socket.join(roomCode);
 
@@ -77,6 +77,13 @@ const roomHandler = (io, socket) => {
             {
                 players: room.players,
                 hostId: room.hostId,
+            }
+        );
+        io.to(roomCode).emit("chat_message",
+            {
+                id: crypto.randomUUID(),
+                type: "system",
+                text: `${player.name} joined the room`
             }
         );
     }
@@ -105,6 +112,44 @@ const roomHandler = (io, socket) => {
 
     });
 
+    // ----------Quick Play----------
+
+    socket.on("quick_play", ({ playerName, emojiIndex }) => {
+        const emoji_array = [
+            '🙂', '😎', '💀', '😁', '😡', '🫣', '🌚', '😋', '😉',
+            '😍', '🫡', '😪', '😌', '🥸', '🤠', '🤡', '😇',
+            '🤖', '👾', '👽', '👻', '🦁', '🦊'
+        ];
+        const avatar = emoji_array[emojiIndex] || '😀';
+
+        let targetRoom = null;
+        let targetCode = null;
+
+        for (const [code, room] of roomManager.rooms) {
+            if (!room.gameStarted && room.players.length < room.settings.maxPlayers) {
+                targetRoom = room;
+                targetCode = code;
+                break;
+            }
+        }
+
+        if (!targetRoom) {
+            targetCode = generateRoomCode();
+            targetRoom = roomManager.createRoom(targetCode, socket.id, {});
+        }
+
+        const player = new Player(socket.id, playerName, avatar);
+        targetRoom.addPlayer(player);
+        socket.join(targetCode);
+
+        socket.emit("quick_play_joined", { roomCode: targetCode });
+
+        io.to(targetCode).emit("player_list_update", {
+            players: targetRoom.players,
+            hostId: targetRoom.hostId,
+        });
+    });
+
     // ----------Disconnect-----------
 
     socket.on("disconnect", () => {
@@ -114,6 +159,8 @@ const roomHandler = (io, socket) => {
             const player = room.getPlayer(socket.id);
 
             if (!player) return;
+
+            const wasDrawer = room.gameStarted && socket.id === room.gameManager.currentDrawerId;
 
             room.removePlayer(socket.id);
 
@@ -129,21 +176,29 @@ const roomHandler = (io, socket) => {
                 players: room.players,
                 hostId: room.hostId
             });
+            io.to(roomCode).emit("chat_message",
+                {
+                    id: crypto.randomUUID(),
+                    type: "system",
+                    text: `${player.name} left the room`
+                }
+            );
 
-            if(socket.id === room.gameManager.currentDrawerId){
-                room.gameManager.nextTurn(io);
+            if (room.isEmpty()) {
+                room.gameManager.reset();
+                roomManager.deleteRoom(roomCode);
+                return;
             }
 
             if (room.gameStarted && room.players.length < 2) {
                 room.gameManager.endGame(io);
-            }
-
-            if (room.isEmpty()) {
-                roomManager.deleteRoom(roomCode);
+            } else if (wasDrawer) {
+                room.gameManager.nextTurn(io);
             }
         });
-        console.log("USER DISCONNECTED:", socket.id);
     });
+
+
 }
 
 export default roomHandler;

@@ -22,8 +22,11 @@ const CreateRoom = ({ setOpen }) => {
       return;
     }
 
+    const emoji_array = ['🙂', '😎', '💀', '😁', '😡', '🫣', '🌚', '😋', '😉', '😍', '🫡', '😪', '😌', '🥸', '🤠', '🤡', '😇', '🤖', '👾', '👽', '👻', '🦁', '🦊'];
+    const avatar = emoji_array[Number(localStorage.getItem("emojiIndex")) || 0] || '😀';
+
     socket.emit("create_room", {
-      playerName, settings: {
+      playerName, avatar, settings: {
         maxPlayers: players,
         drawTime: drawTime,
         maxRounds: rounds,
@@ -32,8 +35,6 @@ const CreateRoom = ({ setOpen }) => {
     },
 
       (response) => {
-        console.log(response);
-
         if (!response.success) {
           alert("Failed to create room");
           return;
@@ -93,7 +94,6 @@ const CreateRoom = ({ setOpen }) => {
               ))}
             </select>
           </div>
-
 
           <div className='flex flex-col gap-2'>
             <label className='text-xl font-bold text-gray-700'>

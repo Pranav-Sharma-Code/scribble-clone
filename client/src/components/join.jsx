@@ -24,8 +24,10 @@ const Join = (props) => {
             return;
         }
 
-        socket.emit("join_room", { roomCode, playerName }, (response) => {
-            console.log(response);
+        const emoji_array = ['🙂', '😎', '💀', '😁', '😡', '🫣', '🌚', '😋', '😉', '😍', '🫡', '😪', '😌', '🥸', '🤠', '🤡', '😇', '🤖', '👾', '👽', '👻', '🦁', '🦊'];
+        const avatar = emoji_array[Number(localStorage.getItem("emojiIndex")) || 0] || '😀';
+
+        socket.emit("join_room", { roomCode, playerName, avatar }, (response) => {
             if (!response.success) {
                 alert(response.message);
                 return;

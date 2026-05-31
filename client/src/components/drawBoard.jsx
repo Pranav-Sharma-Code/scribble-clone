@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import socket from '../socket/socket.js';
 import WordBox from '../components/wordbox';
 import Tools from './tools.jsx';
@@ -14,13 +14,12 @@ const DrawBoard = () => {
     const timeoutRef = useRef(null);
 
     const { roomCode } = useParams();
+    const navigate = useNavigate();
     const [isDrawing, setIsDrawing] = useState(false);
-    const [history, setHistory] = useState([]);
     const [color, setColor] = useState("black");
     const [tool, setTool] = useState("brush");
 
     const [brushSize, setBrushSize] = useState(5);
-    const [hiddenWord, setHiddenWord] = useState("");
     const [currentDrawerId, setCurrentDrawerId] = useState(null);
 
     const [showWordDialog, setShowWordDialog] = useState(false);
@@ -29,10 +28,14 @@ const DrawBoard = () => {
     const [showRoundEnd, setshowRoundEnd] = useState(false);
     const [revealedWord, setRevealedWord] = useState("");
 
-    let [maxRounds, setMaxRounds] = useState(0)
+    const [maxRounds, setMaxRounds] = useState(0)
     const [round, setRound] = useState(0);
-    let [time, setTime] = useState(0);
+    const [time, setTime] = useState(0);
     const [word, setWord] = useState("");
+
+    const [gameOver, setGameOver] = useState(false);
+    const [leaderboard, setLeaderboard] = useState([]);
+    const [winner, setWinner] = useState(null);
 
     const redrawCanvas = () => {
         const canvas = canvasRef.current;
@@ -64,108 +67,104 @@ const DrawBoard = () => {
     }
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-
-        socket.on("draw_start", (stroke) => {
+        const handleDrawStart = (stroke) => {
             strokesRef.current.push(stroke);
             redrawCanvas();
-        });
-
-        socket.on("draw_move", ({
-            strokeId, x, y
-        }) => {
-            const stroke = strokesRef.current.find(
-                s => s.id === strokeId
-            );
-
+        };
+        const handleDrawMove = ({ strokeId, x, y }) => {
+            const stroke = strokesRef.current.find(s => s.id === strokeId);
             if (!stroke) return;
             stroke.points.push({ x, y });
             redrawCanvas();
-        });
-
-        socket.on("draw_undo", (strokes) => {
+        };
+        const handleDrawUndo = (strokes) => {
             strokesRef.current = strokes;
             redrawCanvas();
-        });
-
-        socket.on("canvas_clear", () => {
+        };
+        const handleCanvasClear = () => {
             strokesRef.current = [];
             redrawCanvas();
-        });
-
-        socket.on("canvas_state", (strokes) => {
+        };
+        const handleCanvasState = (strokes) => {
             strokesRef.current = strokes;
             redrawCanvas();
-        })
-
-        socket.on("game_state", (data) => {
+        };
+        const handleGameState = (data) => {
             setRound(data.currentRound);
             setTime(data.timeLeft);
             setWord(data.word);
-            console.log("GAME STATE WORD:", data.word);
-            setMaxRounds(data.maxRounds)
+            setMaxRounds(data.maxRounds);
             setCurrentDrawerId(data.drawerId);
-            setHiddenWord(data.word);
-        });
-
-        socket.on("word_selected", () => {
-            console.log("PARENT CLOSED POPUP");
+        };
+        const handleWordSelected = () => {
             setShowWordDialog(false);
-        });
-
-        socket.on("hint_reveal", ({ displayWord }) => {
-            console.log("HINT:", displayWord);
+        };
+        const handleHintReveal = ({ displayWord }) => {
             setWord(displayWord);
-        });
-
-        socket.on("round_end", ({ word }) => {
+        };
+        const handleRoundEnd = ({ word }) => {
             clearTimeout(timeoutRef.current);
             setshowRoundEnd(true);
             setRevealedWord(word);
             timeoutRef.current = setTimeout(() => {
                 setshowRoundEnd(false);
             }, 5000);
-        });
-
-        socket.on("new_round", (data) => {
+        };
+        const handleNewRound = () => {
             setRevealedWord("");
-        })
-
-        socket.on("choose_word", ({ words }) => {
-            setWordOptions(words);
+        };
+        const handleChooseWord = ({ words }) => {
+            setWordOptions(words || []);
             setShowWordDialog(true);
-        });
+        };
+        const handleGameOver = ({ winner, leaderboard }) => {
+            setGameOver(true);
+            setWinner(winner);
+            setLeaderboard(leaderboard || []);
+            setShowWordDialog(false);
+            setshowRoundEnd(false);
+        };
+
+        socket.on("draw_start", handleDrawStart);
+        socket.on("draw_move", handleDrawMove);
+        socket.on("draw_undo", handleDrawUndo);
+        socket.on("canvas_clear", handleCanvasClear);
+        socket.on("canvas_state", handleCanvasState);
+        socket.on("game_state", handleGameState);
+        socket.on("word_selected", handleWordSelected);
+        socket.on("hint_reveal", handleHintReveal);
+        socket.on("round_end", handleRoundEnd);
+        socket.on("new_round", handleNewRound);
+        socket.on("choose_word", handleChooseWord);
+        socket.on("game_over", handleGameOver);
 
         return () => {
-            socket.off("draw_start");
-            socket.off("draw_move");
-            socket.off("draw_undo");
-
-            socket.off("canvas_clear");
-            socket.off("canvas_state");
-
-            socket.off("game_state");
-            socket.off("word_selected");
-            socket.off("hint_reveal");
-
-            socket.off("choose_word");
-            socket.off("round_end");
-            socket.off("new_round");
+            clearTimeout(timeoutRef.current);
+            socket.off("draw_start", handleDrawStart);
+            socket.off("draw_move", handleDrawMove);
+            socket.off("draw_undo", handleDrawUndo);
+            socket.off("canvas_clear", handleCanvasClear);
+            socket.off("canvas_state", handleCanvasState);
+            socket.off("game_state", handleGameState);
+            socket.off("word_selected", handleWordSelected);
+            socket.off("hint_reveal", handleHintReveal);
+            socket.off("round_end", handleRoundEnd);
+            socket.off("new_round", handleNewRound);
+            socket.off("choose_word", handleChooseWord);
+            socket.off("game_over", handleGameOver);
         };
 
     }, []);
 
-    useEffect(() => {
-        console.log("CURRENT TOOL:", tool);
-    }, [tool]);
 
     const startDrawing = (event) => {
         if (socket.id !== currentDrawerId) return;
         setIsDrawing(true);
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
-        const x = event.nativeEvent.offsetX;
-        const y = event.nativeEvent.offsetY;
+        const rect = canvas.getBoundingClientRect();
+        const x = (event.nativeEvent.offsetX / rect.width) * canvas.width;
+        const y = (event.nativeEvent.offsetY / rect.height) * canvas.height;
 
         lastPointRef.current = { x, y };
         socket.emit("draw_start", {
@@ -189,14 +188,52 @@ const DrawBoard = () => {
     const draw = (event) => {
         if (!isDrawing) return;
 
-        const x = event.nativeEvent.offsetX;
-        const y = event.nativeEvent.offsetY;
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+        const x = (event.nativeEvent.offsetX / rect.width) * canvas.width;
+        const y = (event.nativeEvent.offsetY / rect.height) * canvas.height;
 
         socket.emit("draw_move", {
             roomCode,
             x, y
         });
     };
+
+    if (gameOver) {
+        return (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex items-center justify-center z-50">
+                <div className='flex flex-col items-center gap-6 bg-white/10 backdrop-blur-xl p-10 rounded-3xl border border-white/20 max-w-md w-full'>
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-yellow-400">
+                        🏆 Game Over!
+                    </h1>
+                    {winner && (
+                        <div className='text-center'>
+                            <p className='text-white/60 text-lg'>Winner</p>
+                            <p className='text-3xl font-bold text-white'>{winner.avatar || '😀'} {winner.name}</p>
+                            <p className='text-yellow-300 text-xl font-bold'>{winner.score} Points</p>
+                        </div>
+                    )}
+                    <div className='w-full space-y-2 mt-2'>
+                        <h2 className='text-white/60 text-center text-sm font-bold uppercase tracking-wider'>Leaderboard</h2>
+                        {leaderboard.map((player, i) => (
+                            <div key={player.id} className={`flex items-center justify-between p-3 rounded-xl ${i === 0 ? 'bg-yellow-500/20 border border-yellow-400/50' : 'bg-white/5'}`}>
+                                <div className='flex items-center gap-3'>
+                                    <span className='text-white/50 font-bold w-6'>#{i + 1}</span>
+                                    <span className='text-lg'>{player.avatar || '😀'}</span>
+                                    <span className='text-white font-bold'>{player.name}</span>
+                                </div>
+                                <span className='text-yellow-300 font-bold'>{player.score}</span>
+                            </div>
+                        ))}
+                    </div>
+                    <button onClick={() => navigate(`/room/${roomCode}`)}
+                        className='mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg px-8 py-3 rounded-2xl transition-all hover:scale-95'>
+                        Back to Lobby
+                    </button>
+                </div>
+            </div>
+        )
+    }
 
     if (showRoundEnd) {
         return (
@@ -246,9 +283,6 @@ const DrawBoard = () => {
                     <GuessWord roomCode={roomCode} />
                 )
             }
-
-
-
         </div>
     )
 }

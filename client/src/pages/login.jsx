@@ -84,7 +84,7 @@ return (
             <Avatar emoji={emoji_array[index]} />
           </div>
           <span className='font-bold text-3xl font-stretch-semi-expanded flex justify-center translate-y-4  text-emerald-50'>
-            <Avatar name={name} />
+            {name}
           </span>
         </div>
 

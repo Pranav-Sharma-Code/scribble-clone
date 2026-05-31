@@ -1,4 +1,5 @@
 import GameManager from "../managers/GameManager.js";
+import ChatManager from "../managers/ChatManager.js";
 
 export default class Room {
     constructor(roomCode, hostId, settings) {
@@ -16,6 +17,7 @@ export default class Room {
         };
         this.players = [];
         this.canvasStrokes = [];
+        this.chatManager = new ChatManager();
         this.gameManager = new GameManager(this);
         this.gameStarted = false;
     }

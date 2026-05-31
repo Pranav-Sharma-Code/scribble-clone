@@ -52,14 +52,14 @@ const Tools = ({ color, setColor, brushSize, setBrushSize, tool, setTool, roomCo
                     <div className='cursor-pointer'>
                          <button onClick={() => setTool("brush")}
                               className={`p-2 rounded-xl ${tool === "brush" ? "bg-green-500" : "bg-white/10"}`}>
-                              <span class="material-symbols-outlined"
+                              <span className="material-symbols-outlined"
                                    style={{ fontSize: "24px" }}>
                                    brush
                               </span>
                          </button>
                          <button onClick={() => setTool("eraser")}
                                  className={`p-2 rounded-xl ${tool === "eraser" ? "bg-red-500" : "bg-white/10"}`}>
-                              <span class="material-symbols-outlined"
+                              <span className="material-symbols-outlined"
                                    style={{ fontSize: "24px" }}>
                                    ink_eraser
                               </span>

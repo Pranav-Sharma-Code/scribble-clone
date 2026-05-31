@@ -17,9 +17,36 @@ export default class GameManager {
         this.revealedIndexes = [];
         this.hintTimers = [];
         this.wordSelectionTimer = null;
+        this.endRoundTimer = null;
+        this.wordSelectionDelayTimer = null;
+    }
+
+    reset() {
+        clearInterval(this.timer);
+        clearTimeout(this.wordSelectionTimer);
+        clearTimeout(this.endRoundTimer);
+        clearTimeout(this.wordSelectionDelayTimer);
+        this.hintTimers.forEach(timer => clearTimeout(timer));
+        this.hintTimers = [];
+        this.currentRound = 1;
+        this.currentDrawerIndex = 0;
+        this.currentDrawerId = null;
+        this.timeLeft = this.room.settings.drawTime;
+        this.timer = null;
+        this.currentWord = null;
+        this.guessedPlayers = [];
+        this.status = "waiting";
+        this.displayWord = "";
+        this.revealedIndexes = [];
+        this.endRoundTimer = null;
+        this.wordSelectionTimer = null;
+        this.wordSelectionDelayTimer = null;
     }
 
     startGame(io) {
+        this.reset();
+        this.room.players.forEach(p => p.score = 0);
+
         const firstDrawer = this.room.players[this.currentDrawerIndex];
         this.currentDrawerId = firstDrawer.id;
 
@@ -54,7 +81,7 @@ export default class GameManager {
         io.to(this.room.roomCode).emit("round_end", {
             word: this.currentWord
         });
-        setTimeout(() => {
+        this.endRoundTimer = setTimeout(() => {
             this.nextTurn(io);
         }, 5000);
     }
@@ -69,7 +96,7 @@ export default class GameManager {
             wordOptions.push(this.generateRoundWord());
         }
 
-        setTimeout(() => {
+        this.wordSelectionDelayTimer = setTimeout(() => {
             io.to(drawer.id).emit("choose_word", { words: wordOptions });
         },1000);
         this.wordSelectionTimer = setTimeout(() => {
@@ -129,20 +156,19 @@ export default class GameManager {
 
         if (this.room.players.length === 0) return;
 
+        clearInterval(this.timer);
+        clearTimeout(this.endRoundTimer);
+        clearTimeout(this.wordSelectionDelayTimer);
+
         this.room.canvasStrokes = [];
         io.to(this.room.roomCode).emit("canvas_clear");
 
-        if (this.currentDrawerIndex >= this.room.players.length) {
-            this.currentDrawerIndex = 0;
-        }
         clearTimeout(this.wordSelectionTimer);
         this.currentDrawerIndex++;
         this.currentWord = null;
         this.displayWord = "";
         this.revealedIndexes = [];
         this.guessedPlayers = [];
-        this.displayWord = "";
-        this.revealedIndexes = [];
 
         this.hintTimers.forEach(timer => clearTimeout(timer));
         this.hintTimers = [];
@@ -157,24 +183,23 @@ export default class GameManager {
         }
 
         const drawer = this.room.players[this.currentDrawerIndex];
-        if (!drawer) {
-            console.log("DRAWER NOT FOUND");
-            console.log(this.room.players);
-            console.log(this.currentDrawerIndex);
-            return;
-        }
+        if (!drawer) return;
 
         this.currentDrawerId = drawer.id;
         io.to(this.room.roomCode).emit("new_round", {
             round: this.currentRound,
             drawerId: this.currentDrawerId
         });
+        this.emitGameState(io);
         this.startWordSelection(io);
 
     }
 
     endGame(io) {
         clearInterval(this.timer);
+        clearTimeout(this.wordSelectionTimer);
+        clearTimeout(this.endRoundTimer);
+        clearTimeout(this.wordSelectionDelayTimer);
         this.hintTimers.forEach(timer => clearTimeout(timer));
         this.hintTimers = [];
         this.room.gameStarted = false;
@@ -208,9 +233,12 @@ export default class GameManager {
         if (drawer) {
             drawer.score += Math.floor(this.timeLeft * 2);
         }
-
-        io.to(this.room.roomCode).emit("leaderboard_update", this.room.players);
+        
         io.to(this.room.roomCode).emit("guess_correct", { playerId: player.id, playerName: player.name, score: player.score, scoreEarned: this.timeLeft * 5 });
+
+        io.to(this.room.roomCode).emit("leaderboard_update",
+            [...this.room.players].sort((a, b) => b.score - a.score)
+        );
 
         const remainingPlayers = this.room.players.filter(
             p => p.id !== this.currentDrawerId);

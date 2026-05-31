@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import socket from '../socket/socket';
-import { data } from 'react-router-dom';
 
 const GuessWord = ({ roomCode }) => {
 
@@ -9,39 +8,38 @@ const GuessWord = ({ roomCode }) => {
   const [isCorrect, setIsCorrect] = useState(false);
 
   useEffect(() => {
-    socket.on("guess_correct", (data) => {
+    const handleGuessCorrect = (data) => {
       if (data.playerId === socket.id) {
         setMessage(`+${data.scoreEarned} Points`);
         setIsCorrect(true);
       }
-    });
+    };
 
-    socket.on("word_selected", () => {
+    const handleWordSelected = () => {
       setMessage("");
       setIsCorrect(false);
-    })
+    };
 
-    socket.on("new_round", () => {
+    const handleNewRound = () => {
       setMessage("");
       setIsCorrect(false);
-    })
+    };
 
-
-    socket.on("guess_wrong", ({ guess }) => {
+    const handleGuessWrong = ({ guess }) => {
       setMessage(guess);
       setIsCorrect(false);
-    });
+    };
 
-    socket.on("leaderboard_update", (players) => {
-      console.log(players);
-    });
+    socket.on("guess_correct", handleGuessCorrect);
+    socket.on("word_selected", handleWordSelected);
+    socket.on("new_round", handleNewRound);
+    socket.on("guess_wrong", handleGuessWrong);
 
     return () => {
-      socket.off("guess_correct");
-      socket.off("word_selected");
-      socket.off("new_round")
-      socket.off("leaderboard_update");
-      socket.off("guess_wrong");
+      socket.off("guess_correct", handleGuessCorrect);
+      socket.off("word_selected", handleWordSelected);
+      socket.off("new_round", handleNewRound);
+      socket.off("guess_wrong", handleGuessWrong);
     };
   }, []);
 

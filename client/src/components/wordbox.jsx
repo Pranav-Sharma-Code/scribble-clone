@@ -7,13 +7,15 @@ const WordBox = (props) => {
     const [word, setWord] = useState("");
 
     useEffect(() => {
-        socket.on("drawer_word", ({ word }) => {
+        const handleDrawerWord = ({ word }) => {
             setWord(word);
-        })
+        };
+
+        socket.on("drawer_word", handleDrawerWord);
 
         return () => {
-            socket.off("drawer_word");
-        }
+            socket.off("drawer_word", handleDrawerWord);
+        };
     }, [])
 
     useEffect(() => {

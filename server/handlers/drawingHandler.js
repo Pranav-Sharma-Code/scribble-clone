@@ -10,6 +10,7 @@ const drawingHandler = (io, socket) => {
     }) => {
         const room = RoomManager.getRoom(roomCode);
         if (!room) return;
+        if (!room.gameStarted || socket.id !== room.gameManager.currentDrawerId) return;
         const stroke = {
             id: crypto.randomUUID(),
             color, size,
@@ -28,6 +29,7 @@ const drawingHandler = (io, socket) => {
     }) => {
         const room = RoomManager.getRoom(roomCode);
         if (!room) return;
+        if (!room.gameStarted || socket.id !== room.gameManager.currentDrawerId) return;
         const stroke = room.canvasStrokes.find(
             s => s.id === socket.currentStrokeId
         );
@@ -50,6 +52,7 @@ const drawingHandler = (io, socket) => {
     socket.on("draw_undo", ({ roomCode }) => {
         const room = RoomManager.getRoom(roomCode);
         if (!room) return;
+        if (!room.gameStarted || socket.id !== room.gameManager.currentDrawerId) return;
         room.canvasStrokes.pop();
         io.to(roomCode).emit("draw_undo", room.canvasStrokes);
     });
@@ -59,6 +62,7 @@ const drawingHandler = (io, socket) => {
     socket.on("canvas_clear", ({ roomCode }) => {
         const room = RoomManager.getRoom(roomCode);
         if (!room) return;
+        if (!room.gameStarted || socket.id !== room.gameManager.currentDrawerId) return;
         room.canvasStrokes = [];
         io.to(roomCode).emit("canvas_clear");
     });

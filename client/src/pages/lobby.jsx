@@ -10,71 +10,56 @@ const Lobby = () => {
     const [hostId, setHostId] = useState("");
 
     useEffect(() => {
-        socket.on("player_list_update", ({ players, hostId }) => {
+        const handlePlayerListUpdate = ({ players, hostId }) => {
             setPlayers(players);
             setHostId(hostId);
-        });
-
-        socket.on("game_started", () => {
-            console.log("GAME_STARTED RECEIVED IN LOBBY");
+        };
+        const handleGameStarted = () => {
             navigate(`/playground/${roomCode}`);
-        });
-
-        socket.on("game_error", (message) => {
+        };
+        const handleGameError = (message) => {
             alert(message);
-        });
-
-        socket.on("new_host", (newHostId) => {
+        };
+        const handleNewHost = (newHostId) => {
             setHostId(newHostId);
-        });
+        };
+
+        socket.on("player_list_update", handlePlayerListUpdate);
+        socket.on("game_started", handleGameStarted);
+        socket.on("game_error", handleGameError);
+        socket.on("new_host", handleNewHost);
 
         return () => {
-            socket.off("player_list_update");
-            socket.off("game_started");
-            socket.off("game_error");
-            socket.off("new_host");
+            socket.off("player_list_update", handlePlayerListUpdate);
+            socket.off("game_started", handleGameStarted);
+            socket.off("game_error", handleGameError);
+            socket.off("new_host", handleNewHost);
         };
 
     }, [navigate, roomCode]);
 
     useEffect(() => {
-
-        console.log("ROOM PAGE LOADED");
-
         const playerName = localStorage.getItem("name")?.trim() || "Player";
+        const emoji_array = ['🙂', '😎', '💀', '😁', '😡', '🫣', '🌚', '😋', '😉', '😍', '🫡', '😪', '😌', '🥸', '🤠', '🤡', '😇', '🤖', '👾', '👽', '👻', '🦁', '🦊'];
+        const avatar = emoji_array[Number(localStorage.getItem("emojiIndex")) || 0] || '😀';
 
-
-        socket.emit("join_room", { roomCode, playerName }, (response) => {
-            console.log("AUTO JOIN:", response);
-        }
-        );
-
-    }, [roomCode]);
-
-
-    const startGame = () => {
-
-        socket.emit("start_game", { roomCode });
-
-    };
-
-    useEffect(() => {
-
-        socket.emit("get_room", { roomCode }, (response) => {
-
-            console.log("GET ROOM RESPONSE:", response);
-
+        socket.emit("join_room", { roomCode, playerName, avatar }, (response) => {
             if (!response.success) {
-                console.log("ROOM NOT FOUND");
+                alert(response.message || "Failed to join room");
                 return;
             }
-
-            setPlayers(response.players);
-            setHostId(response.hostId);
-        }
-        );
-
+            socket.emit("get_room", { roomCode }, (res) => {
+                if (res.success) {
+                    setPlayers(res.players);
+                    setHostId(res.hostId);
+                }
+            });
+        });
     }, [roomCode]);
+
+    const startGame = () => {
+        socket.emit("start_game", { roomCode });
+    };
 
 
     return (
