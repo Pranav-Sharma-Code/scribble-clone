@@ -37,6 +37,17 @@ const DrawBoard = () => {
     const [leaderboard, setLeaderboard] = useState([]);
     const [winner, setWinner] = useState(null);
 
+    const getCursor = () => {
+        if (socket.id !== currentDrawerId) return 'default';
+        const s = Math.max(brushSize + 10, 16);
+        const h = s / 2;
+        const inner = Math.max(brushSize / 2, 3);
+        if (tool === 'eraser') {
+            return `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><circle cx='12' cy='12' r='10' fill='%23ccc' fill-opacity='0.3' stroke='%23999' stroke-width='1.5'/><circle cx='12' cy='12' r='4' fill='%23999' stroke='%23777' stroke-width='1'/></svg>") 12 12, auto`;
+        }
+        return `url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24'><circle cx='12' cy='12' r='10' fill='%234a86c8' fill-opacity='0.25' stroke='%234a86c8' stroke-width='1'/><circle cx='12' cy='12' r='4' fill='%233b6fa0' stroke='%23345e88' stroke-width='1.5'/></svg>") 12 12, crosshair`;
+    };
+
     const redrawCanvas = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -208,23 +219,25 @@ const DrawBoard = () => {
 
     if (gameOver) {
         return (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex items-center justify-center z-50">
-                <div className='flex flex-col items-center gap-6 bg-white/10 backdrop-blur-xl p-10 rounded-3xl border border-white/20 max-w-md w-full'>
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-yellow-400">
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex items-center justify-center z-50 cursor-default">
+                <div className='flex flex-col items-center gap-6 bg-white/10 backdrop-blur-xl p-10 rounded-3xl border
+                 border-white/20 max-w-md w-full cursor-default'>
+                    <h1 className="text-4xl md:text-5xl font-extrabold text-yellow-400 cursor-pointer">
                         🏆 Game Over!
                     </h1>
                     {winner && (
-                        <div className='text-center'>
+                        <div className='text-center cursor-default'>
                             <p className='text-white/60 text-lg'>Winner</p>
                             <p className='text-3xl font-bold text-white'>{winner.avatar || '😀'} {winner.name}</p>
                             <p className='text-yellow-300 text-xl font-bold'>{winner.score} Points</p>
                         </div>
                     )}
-                    <div className='w-full space-y-2 mt-2'>
-                        <h2 className='text-white/60 text-center text-sm font-bold uppercase tracking-wider'>Leaderboard</h2>
+                    <div className='w-full space-y-2 mt-2 cursor-default'>
+                        <h2 className='text-white/60 text-center text-sm font-bold uppercase tracking-wider cursor-default'>Leaderboard</h2>
                         {leaderboard.map((player, i) => (
-                            <div key={player.id} className={`flex items-center justify-between p-3 rounded-xl ${i === 0 ? 'bg-yellow-500/20 border border-yellow-400/50' : 'bg-white/5'}`}>
-                                <div className='flex items-center gap-3'>
+                            <div key={player.id} className={`flex items-center cursor-default justify-between p-3 rounded-xl 
+                            ${i === 0 ? 'bg-yellow-500/20 border border-yellow-400/50' : 'bg-white/5'}`}>
+                                <div className='flex items-center gap-3 cursor-default'>
                                     <span className='text-white/50 font-bold w-6'>#{i + 1}</span>
                                     <span className='text-lg'>{player.avatar || '😀'}</span>
                                     <span className='text-white font-bold'>{player.name}</span>
@@ -234,7 +247,8 @@ const DrawBoard = () => {
                         ))}
                     </div>
                     <button onClick={() => navigate('/')}
-                        className='mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg px-8 py-3 rounded-2xl transition-all hover:scale-95'>
+                        className='mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg px-8 py-3 
+                        rounded-2xl transition-all hover:scale-95 cursor-pointer'>
                         Home
                     </button>
                 </div>
@@ -246,10 +260,11 @@ const DrawBoard = () => {
         return (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-lg flex items-center justify-center z-50">
                 <div className='flex flex-col font-bold text-5xl text-white justify-center items-center gap-10'>
-                    <h1 className="text-4xl md:text-6xl font-extrabold  text-white/30 font-serif">
+                    <h1 className="text-4xl md:text-6xl font-extrabold  text-white/30 font-serif cursor-default">
                         Word Was
                     </h1>
-                    <div className='bg-purple-600/20  max-w-md flex justify-center items-center p-5 rounded-2xl border-purple-950/20 border-2 font-serif animate-[wordReveal_1.0s_ease-out]'>
+                    <div className='bg-purple-600/20  max-w-md flex justify-center items-center p-5 rounded-2xl
+                     border-purple-950/20 border-2 font-serif cursor-pointer animate-[wordReveal_1.0s_ease-out]'>
                         {revealedWord}
                     </div>
                 </div>
@@ -264,7 +279,8 @@ const DrawBoard = () => {
 
             <canvas ref={canvasRef} width={800} height={600} onMouseDown={startDrawing} onMouseUp={stopDrawing}
                 onMouseMove={draw} onMouseLeave={stopDrawing}
-                className='bg-white w-full max-w-[800px] aspect-[4/3] border-2 border-purple-500 rounded-xl cursor-crosshair' />
+                style={{ cursor: getCursor() }}
+                className='bg-white w-full max-w-[800px] aspect-[4/3] border-2 border-purple-500 rounded-xl' />
 
             {
                 showWordDialog && (

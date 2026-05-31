@@ -48,7 +48,7 @@ const Playground = () => {
   }, [roomCode]);
 
   return (
-    <div className="flex flex-col lg:flex-row justify-evenly items-center gap-2 min-h-screen w-full p-2 md:p-4">
+    <div className="flex flex-col lg:flex-row justify-evenly items-center gap-2 min-h-screen w-full p-2 md:p-4 cursor-default">
 
       <div className="w-full lg:w-52 xl:w-64 h-auto lg:h-[600px] order-1 lg:order-1">
         <PlayerList
@@ -58,7 +58,7 @@ const Playground = () => {
         />
       </div>
 
-      <div className="flex-1 min-w-0 max-w-[700px] order-2">
+      <div className="flex-1 min-w-0 max-w-[700px] order-2 ">
         <DrawBoard />
       </div>
 
