@@ -51,8 +51,23 @@ const GuessWord = ({ roomCode }) => {
 
   return (
     <div className='bg-black/30 backdrop-blur-lg w-80 h-20 rounded-2xl flex flex-col-reverse items-center p-2 gap-2'>
-      <input type="text" value={guess} onChange={(event) => setGuess(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { submitGuess() } }}
-        className='bg-white rounded-xl p-1 pl-3' placeholder='...Guess Here' />
+      <div className='relative w-full'>
+        <input type="text" value={guess}
+          onChange={(event) => setGuess(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              submitGuess()
+            }
+          }}
+          className='bg-white rounded-xl p-1 pl-3' placeholder='Guess the word...' />
+        <button onClick={submitGuess}
+                className='absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center text-blue-300
+                           justify-center rounded-lg font-bold active:scale-95 active:text-blue-400'
+        >
+          ➤
+        </button>
+       
+      </div>
       <p className={`font-extrabold text-xl font-sans ${isCorrect ? "text-green-500" : "text-red-500"} `}>
         {message}
       </p>
@@ -60,4 +75,5 @@ const GuessWord = ({ roomCode }) => {
   )
 }
 
-export default GuessWord; 
+export default GuessWord;
+
