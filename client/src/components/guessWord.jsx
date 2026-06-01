@@ -50,7 +50,7 @@ const GuessWord = ({ roomCode }) => {
   };
 
   return (
-    <div className='bg-black/30 backdrop-blur-lg w-full px-4 h-24 rounded-2xl flex flex-col-reverse items-center pt-2 gap-2'>
+    <div className='bg-black/30 backdrop-blur-lg w-full px-4 h-24 rounded-2xl flex flex-col-reverse items-center pt-2 pb-0.5 gap-2'>
       <div className='relative w-80'>
         <input type="text" value={guess}
           onChange={(event) => setGuess(event.target.value)}
