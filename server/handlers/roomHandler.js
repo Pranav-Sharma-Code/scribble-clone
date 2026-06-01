@@ -164,7 +164,7 @@ const roomHandler = (io, socket) => {
 
             room.removePlayer(socket.id);
 
-            if (room.hostId == socket.id && room.players.length > 1) {
+            if (room.hostId == socket.id && room.players.length > 0) {
 
                 room.hostId = room.players[0].id;
                 io.to(roomCode).emit("new_host", room.hostId);
