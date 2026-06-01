@@ -138,10 +138,16 @@ const roomHandler = (io, socket) => {
             targetRoom = roomManager.createRoom(targetCode, socket.id, {});
         }
 
-        const player = new Player(socket.id, playerName, avatar);
-        targetRoom.addPlayer(player);
-        socket.join(targetCode);
+        const existingPlayer = targetRoom.players.find(
+            player => player.id === socket.id
+        );
 
+        if (!existingPlayer) {
+            const player = new Player(socket.id, playerName, avatar);
+            targetRoom.addPlayer(player);
+        }
+        
+        socket.join(targetCode);
         socket.emit("quick_play_joined", { roomCode: targetCode });
 
         io.to(targetCode).emit("player_list_update", {
