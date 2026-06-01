@@ -181,8 +181,8 @@ const DrawBoard = () => {
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         const rect = canvas.getBoundingClientRect();
-        const x = (event.nativeEvent.offsetX / rect.width) * canvas.width;
-        const y = (event.nativeEvent.offsetY / rect.height) * canvas.height;
+        const x = ((event.clientX - rect.left) / rect.width) * canvas.width;
+        const y = ((event.clientY - rect.top) / rect.height) * canvas.height;
 
         lastPointRef.current = { x, y };
         socket.emit("draw_start", {
@@ -277,10 +277,10 @@ const DrawBoard = () => {
 
             <WordBox round={round} time={time} maxRounds={maxRounds} word={word} drawerId={currentDrawerId} />
 
-            <canvas ref={canvasRef} width={800} height={600} onMouseDown={startDrawing} onMouseUp={stopDrawing}
-                onMouseMove={draw} onMouseLeave={stopDrawing}
+            <canvas ref={canvasRef} width={800} height={600} onPointerDown={startDrawing} onPointerUp={stopDrawing}
+                onPointerMove={draw} onPointerLeave={stopDrawing}
                 style={{ cursor: getCursor() }}
-                className='bg-white w-full max-w-[800px] aspect-[4/3] border-2 border-purple-500 rounded-xl' />
+                className='bg-white w-full max-w-[800px] aspect-[4/3] border-2 border-purple-500 rounded-xl touch-none' />
 
             {
                 showWordDialog && (
