@@ -70,13 +70,13 @@ return (
     <div className="bg-purple-400 p-6 gap-20 grid justify-center items-center w-[90vw] max-w-[400px] min-h-[500px] rounded-3xl" >
 
       <div className="bg-purple-500 p-1  w-full h-[200px] flex items-center justify-between rounded-3xl cursor-default">
-        <button onClick={leftClick}>
-          <span className="material-symbols-outlined p-4 text-white cursor-pointer
+        <button onClick={leftClick}
+                 className=" p-4 text-white cursor-pointer active:-translate-x-1
                   hover:scale-90 active:text-white/40 rounded-full transition-all duration-100"
             style={{ fontSize: "60px" }}
           >
-            arrow_back_ios
-          </span>
+            ❮
+          
         </button>
 
         <div className='flex flex-col mt-6 items-center justify-center h-40' >
@@ -86,13 +86,13 @@ return (
           </span>
         </div>
 
-        <button onClick={rightClick}>
-          <span className="material-symbols-outlined p-4 text-white cursor-pointer
+        <button onClick={rightClick}
+                className=" p-4 text-white cursor-pointer active:translate-x-1
                   hover:scale-90 active:text-white/40 transition-all duration-100"
             style={{ fontSize: "60px" }}
           >
-            arrow_forward_ios
-          </span>
+            ❯
+          
         </button>
       </div>
       <input type="text" placeholder='...name(max-length 8)' maxLength={8} className='bg-white/40 border-2 border-purple-950/40 
