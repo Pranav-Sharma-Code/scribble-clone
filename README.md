@@ -21,7 +21,7 @@ Build an end-to-end clone of Scribbl.io featuring:
 
 ## Demo
 
-![Gameplay Demo](https://game-scribble-clone.vercel.app/)
+https://game-scribble-clone.vercel.app
 
 ---
 
