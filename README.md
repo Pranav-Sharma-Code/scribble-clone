@@ -23,6 +23,8 @@ Build an end-to-end clone of Scribbl.io featuring:
 
 https://game-scribble-clone.vercel.app
 
+GIVE THIS GAME A CHANCE!
+
 ---
 
 ## Implemented Features
@@ -195,4 +197,4 @@ Through this project, the following concepts were implemented and explored:
 
 Pranav
 
-Full Stack Development Assignment Submission
+Full Stack Development Assignment Submi
