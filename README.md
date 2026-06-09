@@ -27,67 +27,6 @@ GIVE THIS GAME A CHANCE!
 
 ---
 
-
-## Structure
-scribble-clone/
-│
-├── client/
-│   │
-│   ├── public/
-│   │
-│   ├── src/
-│   │   │
-│   │   ├── assets/
-│   │   │   ├── bg.svg
-│   │   │   └── ...
-│   │   │
-│   │   ├── components/
-│   │   │   ├── chatbox.jsx
-│   │   │   ├── chooseWord.jsx
-│   │   │   ├── drawBoard.jsx
-│   │   │   ├── guessWord.jsx
-│   │   │   ├── playerList.jsx
-│   │   │   ├── tools.jsx
-│   │   │   └── wordBox.jsx
-│   │   │
-│   │   ├── pages/
-│   │   │   ├── Home.jsx
-│   │   │   ├── Lobby.jsx
-│   │   │   └── Playground.jsx
-│   │   │
-│   │   ├── socket/
-│   │   │   └── socket.js
-│   │   │
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── index.css
-│   │
-│   ├── vercel.json
-│   ├── package.json
-│   └── vite.config.js
-│
-├── server/
-│   │
-│   ├── managers/
-│   │   ├── GameManager.js
-│   │   └── RoomManager.js
-│   │
-│   ├── models/
-│   │   ├── Player.js
-│   │   └── Room.js
-│   │
-│   ├── socket/
-│   │   └── socketHandler.js
-│   │
-│   ├── utils/
-│   │   ├── words.js
-│   │   └── helpers.js
-│   │
-│   ├── index.js
-│   └── package.json
-│
-├── README.md
-└── .gitignore
 ## Implemented Features
 
 ### Room & Lobby System
@@ -147,6 +86,66 @@ scribble-clone/
 ### Communication
 - WebSockets (Socket.IO)
 
+---
+## 📂 Project Structure
+
+```text
+scribble-clone/
+│
+├── client/
+│   ├── public/
+│   │
+│   ├── src/
+│   │   ├── assets/
+│   │   │   └── bg.svg
+│   │   │
+│   │   ├── components/
+│   │   │   ├── ChatBox.jsx
+│   │   │   ├── ChooseWord.jsx
+│   │   │   ├── DrawBoard.jsx
+│   │   │   ├── GuessWord.jsx
+│   │   │   ├── PlayerList.jsx
+│   │   │   ├── Tools.jsx
+│   │   │   └── WordBox.jsx
+│   │   │
+│   │   ├── pages/
+│   │   │   ├── Home.jsx
+│   │   │   ├── Lobby.jsx
+│   │   │   └── Playground.jsx
+│   │   │
+│   │   ├── socket/
+│   │   │   └── socket.js
+│   │   │
+│   │   ├── App.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
+│   │
+│   ├── vercel.json
+│   ├── package.json
+│   └── vite.config.js
+│
+├── server/
+│   ├── managers/
+│   │   ├── GameManager.js
+│   │   └── RoomManager.js
+│   │
+│   ├── models/
+│   │   ├── Player.js
+│   │   └── Room.js
+│   │
+│   ├── socket/
+│   │   └── socketHandler.js
+│   │
+│   ├── utils/
+│   │   ├── words.js
+│   │   └── helpers.js
+│   │
+│   ├── index.js
+│   └── package.json
+│
+├── README.md
+└── .gitignore
+```
 ---
 
 ## System Architecture
