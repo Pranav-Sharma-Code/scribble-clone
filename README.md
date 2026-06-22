@@ -254,5 +254,4 @@ Through this project, the following concepts were implemented and explored:
 ---
 
 ## Author
-
 Pranav Sharma
